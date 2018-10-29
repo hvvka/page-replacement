@@ -3,6 +3,11 @@
 
 # Hit or new item:  add to page table and mark in hash table the memory load #
 # Miss:   go through hash table, find lowest #, outright, since numbers are growing, evict it. call add again
+import logging
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.CRITICAL)
+
 
 class LRU:
 
@@ -12,7 +17,7 @@ class LRU:
         self.trace = trace
         self.frame_list = page_table.frame_table
 
-        #initalize our PPNs
+        # initalize our PPNs
         counter = 0
         for elem in self.frame_list:
             elem.PPN = counter
@@ -86,7 +91,6 @@ class LRU:
                 lowest_value_vpn = elem.VPN
                 lowest_value_ppn = elem.PPN
 
-
         # remove the lowest value vpn
         self.remove(lowest_value_ppn, lowest_value_vpn)
 
@@ -128,32 +132,31 @@ class LRU:
             self.PAGE_TABLE.total_memory_accesses += 1
             # print trace to screen
             if self.hit:
-                print "Memory address: " + str(next_address[0]) + " VPN="+ str(next_vpn) + ":: number " + \
-                      str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->HIT"
+                logger.info("Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
+                            str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->HIT")
             elif not self.evict:
-                  print "Memory address: " + str(next_address[0]) + " VPN="+ str(next_vpn) + ":: number " + \
-                      str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - NO EVICTION"
-                  # else, we have a page fault
-                  self.PAGE_TABLE.page_faults += 1
+                logger.info("Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
+                            str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - NO EVICTION")
+                # else, we have a page fault
+                self.PAGE_TABLE.page_faults += 1
             elif self.evict and not self.dirty:
-                 print "Memory address: " + str(next_address[0]) + " VPN="+ str(next_vpn) + ":: number " + \
-                      str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - EVICT CLEAN"
-                 # else, we have a page fault
-                 self.PAGE_TABLE.page_faults += 1
+
+                logger.info("Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
+                            str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - EVICT CLEAN")
+                # else, we have a page fault
+                self.PAGE_TABLE.page_faults += 1
             else:
-                 print "Memory address: " + str(next_address[0]) + " VPN="+ str(next_vpn) + ":: number " + \
-                      str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - EVICT DIRTY"
-                 # else, we have a page fault
-                 self.PAGE_TABLE.page_faults += 1
-                 self.PAGE_TABLE.writes_to_disk += 1
+                logger.info("Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
+                            str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - EVICT DIRTY")
+                # else, we have a page fault
+                self.PAGE_TABLE.page_faults += 1
+                self.PAGE_TABLE.writes_to_disk += 1
 
         self.print_results()
 
     def print_results(self):
-        print "Algorithm: Clock"
-        print "Number of frames:   "+str(len(self.PAGE_TABLE.frame_table))
-        print "Total Memory Accesses: "+str(self.PAGE_TABLE.total_memory_accesses)
-        print "Total Page Faults: "+str(self.PAGE_TABLE.page_faults)
-        print "Total Writes to Disk: "+str(self.PAGE_TABLE.writes_to_disk)
-
-
+        logger.info("Algorithm: Clock")
+        logger.info("Number of frames:   " + str(len(self.PAGE_TABLE.frame_table)))
+        logger.info("Total Memory Accesses: " + str(self.PAGE_TABLE.total_memory_accesses))
+        logger.info("Total Page Faults: " + str(self.PAGE_TABLE.page_faults))
+        logger.info("Total Writes to Disk: " + str(self.PAGE_TABLE.writes_to_disk))

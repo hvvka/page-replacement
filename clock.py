@@ -1,5 +1,10 @@
 """ 'Clock' Page Replacement Algorithm Implementation
 """
+import logging
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.CRITICAL)
+
 
 ##########################
 ######## ALGORITHM #######
@@ -55,18 +60,15 @@ class Clock():
         else:
             self.hit = True
 
-
     def run_algorithm(self):
         # keep track of our memory accesses
         self.PAGE_TABLE.total_memory_accesses = 0
-
 
         # run the algorithm while we have items left in the trace
         while len(self.trace) > 0:
             self.hit = False
             self.evict = False
             self.dirty = False
-
 
             # pull out next item of the trace
             next_address = self.trace[0]
@@ -77,25 +79,29 @@ class Clock():
             self.trace.pop(0)
 
             self.PAGE_TABLE.total_memory_accesses += 1
-             # print trace to screen
+            # print trace to screen
             if self.hit:
-                print "Memory address: " + str(next_address[0]) + " VPN="+ str(next_vpn) + ":: number " + \
-                      str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->HIT"
+                logger.info(
+                    "Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
+                    str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->HIT")
             elif not self.evict:
-                print "Memory address: " + str(next_address[0]) + " VPN="+ str(next_vpn) + ":: number " + \
-                      str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - NO EVICTION"
+                logger.info(
+                    "Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
+                    str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - NO EVICTION")
             elif self.evict and not self.dirty:
-                print "Memory address: " + str(next_address[0]) + " VPN="+ str(next_vpn) + ":: number " + \
-                      str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - EVICT CLEAN"
+                logger.info(
+                    "Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
+                    str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - EVICT CLEAN")
             else:
-                print "Memory address: " + str(next_address[0]) + " VPN="+ str(next_vpn) + ":: number " + \
-                      str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - EVICT DIRTY"
+                logger.info(
+                    "Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
+                    str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - EVICT DIRTY")
 
         self.print_results()
 
     def print_results(self):
-        print "Algorithm: Clock"
-        print "Number of frames:   "+str(len(self.PAGE_TABLE.frame_table))
-        print "Total Memory Accesses: "+str(self.PAGE_TABLE.total_memory_accesses)
-        print "Total Page Faults: "+str(self.PAGE_TABLE.page_faults)
-        print "Total Writes to Disk: "+str(self.PAGE_TABLE.writes_to_disk)
+        logger.info("Algorithm: Clock")
+        logger.info("Number of frames:   " + str(len(self.PAGE_TABLE.frame_table)))
+        logger.info("Total Memory Accesses: " + str(self.PAGE_TABLE.total_memory_accesses))
+        logger.info("Total Page Faults: " + str(self.PAGE_TABLE.page_faults))
+        logger.info("Total Writes to Disk: " + str(self.PAGE_TABLE.writes_to_disk))

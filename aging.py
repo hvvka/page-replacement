@@ -1,6 +1,11 @@
 """ 'Aging' Page Replacement Algorithm Implementation
 """
+import logging
 import time
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.CRITICAL)
+
 
 ##########################
 ######## ALGORITHM #######
@@ -41,7 +46,6 @@ class Aging:
             if elem.reference:
                 elem.aging_value |= (1 << 7)
 
-
     def collect_data_on_references_during_this_tick(self):
         # check if it's time to refresh and age
         if time.clock() - self.time_of_last_refresh >= self.refresh_time_in_ms:
@@ -52,7 +56,6 @@ class Aging:
             # then reset all the reference bits
             for elem in self.frame_queue:
                 elem.reference = False
-
 
     def add_or_update_page(self, vpn, read_or_write):
         # try and add/update, if success, we're done... otherwise need to evict
@@ -146,7 +149,6 @@ class Aging:
             self.collect_data_on_references_during_this_tick()
             self.add_or_update_page(next_vpn, next_read_or_write)
 
-
             """ END ALGORITHM """
             # then remove it from the trace, so it isn't processed a second time
             self.trace.pop(0)
@@ -154,30 +156,33 @@ class Aging:
             self.PAGE_TABLE.total_memory_accesses += 1
             # print trace to screen
             if self.hit:
-                print "Memory address: " + str(next_address[0]) + " VPN="+ str(next_vpn) + ":: number " + \
-                      str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->HIT"
+                logger.info("Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
+                            str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->HIT")
             elif not self.evict:
-                  print "Memory address: " + str(next_address[0]) + " VPN="+ str(next_vpn) + ":: number " + \
-                      str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - NO EVICTION"
-                  # else, we have a page fault
-                  self.PAGE_TABLE.page_faults += 1
+                logging.info(
+                    "Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
+                    str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - NO EVICTION")
+                # else, we have a page fault
+                self.PAGE_TABLE.page_faults += 1
             elif self.evict and not self.dirty:
-                 print "Memory address: " + str(next_address[0]) + " VPN="+ str(next_vpn) + ":: number " + \
-                      str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - EVICT CLEAN"
-                 # else, we have a page fault
-                 self.PAGE_TABLE.page_faults += 1
+                logging.info(
+                    "Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
+                    str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - EVICT CLEAN")
+                # else, we have a page fault
+                self.PAGE_TABLE.page_faults += 1
             else:
-                 print "Memory address: " + str(next_address[0]) + " VPN="+ str(next_vpn) + ":: number " + \
-                      str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - EVICT DIRTY"
-                 # else, we have a page fault
-                 self.PAGE_TABLE.page_faults += 1
+                logging.info(
+                    "Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
+                    str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - EVICT DIRTY")
+                # else, we have a page fault
+                self.PAGE_TABLE.page_faults += 1
 
         self.print_results()
 
     def print_results(self):
-        print "Algorithm: Aging"
-        print "Number of frames:   "+str(len(self.PAGE_TABLE.frame_table))
-        print "Refresh Rate:       "+str(self.refresh_time_in_ms)
-        print "Total Memory Accesses: "+str(self.PAGE_TABLE.total_memory_accesses)
-        print "Total Page Faults: "+str(self.PAGE_TABLE.page_faults)
-        print "Total Writes to Disk: "+str(self.PAGE_TABLE.writes_to_disk)
+        logging.info("Algorithm: Aging")
+        logging.info("Number of frames:   " + str(len(self.PAGE_TABLE.frame_table)))
+        logging.info("Refresh Rate:       " + str(self.refresh_time_in_ms))
+        logging.info("Total Memory Accesses: " + str(self.PAGE_TABLE.total_memory_accesses))
+        logging.info("Total Page Faults: " + str(self.PAGE_TABLE.page_faults))
+        logging.info("Total Writes to Disk: " + str(self.PAGE_TABLE.writes_to_disk))

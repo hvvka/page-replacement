@@ -1,7 +1,9 @@
 """ 'Opt' (optimal)  Page Replacement Algorithm Implementation
 """
-import pageTable as pt
+import logging
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.CRITICAL)
 
 
 ## NEXT:  Change print statements to class variables and just write one statement at end, each time.
@@ -9,11 +11,12 @@ import pageTable as pt
 class Opt():
     """ An implementation of the optimal page replacement algorithm
     """
+
     def __init__(self, page_table, trace):
         self.PAGE_TABLE = page_table
         self.trace = trace
-        self.time_until_use_dict = {}    # HashTable, where the KEY=VPN, VALUE=[NUM_LOADS_UNTIL_USED]
-                                    # every iteration of the algorithm we need to subtract value by 1
+        self.time_until_use_dict = {}  # HashTable, where the KEY=VPN, VALUE=[NUM_LOADS_UNTIL_USED]
+        # every iteration of the algorithm we need to subtract value by 1
 
         # string concatenation variables
         self.hit = False
@@ -43,7 +46,6 @@ class Opt():
                 if frame.instructions_until_next_reference < -1:  # -1 means we just processed this address
                     frame.instructions_until_next_reference = self.find_time_until_next_access(vpn)
 
-
     def find_time_until_next_access(self, vpn, counter=0):
         """OLD VERSION
         # for item in the trace, loop until we find next instance of of the vpn,
@@ -61,12 +63,12 @@ class Opt():
         # once we find the next occurrence of the vpn, return it
         return counter
         """
-        next_index_used = self.time_until_use_dict[vpn][0] # get the number at index 0
+        next_index_used = self.time_until_use_dict[vpn][0]  # get the number at index 0
 
         # if we get a None, then time until next access is NEVER, or the current trace length+1,
         # which is effectively 'never'
         if next_index_used == None:
-           time_until_next_access = len(self.trace) + 1
+            time_until_next_access = len(self.trace) + 1
 
         # otherwise, we can calculate time until next use by subtracting the total # of memory acccesses,
         # which is the current 'index' of the trace we're on, from the next index at which VPN appears
@@ -74,7 +76,6 @@ class Opt():
             time_until_next_access = next_index_used - self.PAGE_TABLE.total_memory_accesses
 
         return time_until_next_access
-
 
     def find_vpn_in_page_table(self, vpn):
         page_index = None
@@ -93,16 +94,15 @@ class Opt():
             return False
         else:
             self.PAGE_TABLE.page_faults += 1
-            #print "\t-> PAGE FAULT"
+            # print "\t-> PAGE FAULT"
             self.hit = False
             return True
-
 
     def add_vpn_to_page_table_or_update(self, vpn, R_or_W):
         # iterate through all the frames in the page table,
         # and if there's an empty space, use it
         if vpn in self.PAGE_TABLE.fast_index:
-            #print "\t-> NO EVICTION"
+            # print "\t-> NO EVICTION"
             self.evict = False
             frame_index = self.PAGE_TABLE.fast_index[vpn]
             frame = self.PAGE_TABLE.frame_table[frame_index]
@@ -123,7 +123,7 @@ class Opt():
         for frame in self.PAGE_TABLE.frame_table:
             # then set this frame to in use
             if not frame.in_use:
-                #print "\t-> NO EVICTION"
+                # print "\t-> NO EVICTION"
                 # self.evict = False
                 page_added = True
                 frame.in_use = True
@@ -138,12 +138,10 @@ class Opt():
                 break
             index += 1
 
-
         # if we don't have any free pages, then we need to pick a page to evict, and try again
         if page_added == False:
             self.evict_vpn_from_page_table()
             self.add_vpn_to_page_table_or_update(vpn, R_or_W)
-
 
     def evict_vpn_from_page_table(self):
         least_needed = 0
@@ -174,7 +172,6 @@ class Opt():
             self.evict = True
             self.dirty = False
 
-
     def run_algorithm(self):
         """ run the opt algorithm on all memory accesses in our trace
         """
@@ -199,20 +196,19 @@ class Opt():
 
             # print trace to screen
             if self.hit:
-                print "Memory address: " + str(next_address[0]) + " VPN="+ str(next_vpn) + ":: number " + \
-                      str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->HIT"
+                logger.info("Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
+                            str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->HIT")
             elif not self.evict:
-                  print "Memory address: " + str(next_address[0]) + " VPN="+ str(next_vpn) + ":: number " + \
-                      str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - NO EVICTION"
+                logger.info("Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
+                            str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - NO EVICTION")
             elif self.evict and not self.dirty:
-                 print "Memory address: " + str(next_address[0]) + " VPN="+ str(next_vpn) + ":: number " + \
-                      str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - EVICT CLEAN"
+                logger.info("Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
+                            str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - EVICT CLEAN")
             else:
-                 print "Memory address: " + str(next_address[0]) + " VPN="+ str(next_vpn) + ":: number " + \
-                      str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - EVICT DIRTY"
+                logger.info("Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
+                            str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - EVICT DIRTY")
 
         self.print_results()
-
 
     def opt(self, memory_access):
         # what are the steps for opt?
@@ -223,7 +219,7 @@ class Opt():
         # if page IS in table, just check if we have a write, and if we do have a write,
         # then set the dirty bit to true
         if self.check_for_page_fault(vpn) == False:  # if we do NOT have a page fault
-                                                     # the page is already present in table
+            # the page is already present in table
             # and if page is in the table, we don't have to do anything else,
             # just set dirty bit if we're writing
             if read_or_write == 'W':
@@ -236,24 +232,22 @@ class Opt():
         # else, page fault (make it +1; done in check_for_page_fault() fn),
         # and run the algorithm
         else:
-             # if page table isn't full, then we just add next memory address
-             # if page table IS full, then go through the WHOLE list of accesses, and find the VPN
-             # that's IN memory, which won't be used for the longest time in the future.
-             # pick THAT memory address and remove it
-             self.add_vpn_to_page_table_or_update(vpn, read_or_write)
-             #>>>>>>>>> When we go through the access list for each each page, assign it a value, how long until NEXT
-             #          use... then, ONLY search when we don't know how long until next use, for NEW
-             #          otherwise subtract 1 from the values we currently have in the table each mem load
-             #     if dirty, write to disk, count a disk write
-
+            # if page table isn't full, then we just add next memory address
+            # if page table IS full, then go through the WHOLE list of accesses, and find the VPN
+            # that's IN memory, which won't be used for the longest time in the future.
+            # pick THAT memory address and remove it
+            self.add_vpn_to_page_table_or_update(vpn, read_or_write)
+            # >>>>>>>>> When we go through the access list for each each page, assign it a value, how long until NEXT
+            #          use... then, ONLY search when we don't know how long until next use, for NEW
+            #          otherwise subtract 1 from the values we currently have in the table each mem load
+            #     if dirty, write to disk, count a disk write
 
     def print_results(self):
-        print "Algorithm: Opt"
-        print "Number of frames:   "+str(len(self.PAGE_TABLE.frame_table))
-        print "Total Memory Accesses: "+str(self.PAGE_TABLE.total_memory_accesses)
-        print "Total Page Faults: "+str(self.PAGE_TABLE.page_faults)
-        print "Total Writes to Disk: "+str(self.PAGE_TABLE.writes_to_disk)
-
+        logger.info("Algorithm: Opt")
+        logger.info("Number of frames:   " + str(len(self.PAGE_TABLE.frame_table)))
+        logger.info("Total Memory Accesses: " + str(self.PAGE_TABLE.total_memory_accesses))
+        logger.info("Total Page Faults: " + str(self.PAGE_TABLE.page_faults))
+        logger.info("Total Writes to Disk: " + str(self.PAGE_TABLE.writes_to_disk))
 
     def preprocess_trace(self):
         """

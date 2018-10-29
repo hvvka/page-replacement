@@ -1,6 +1,11 @@
 """ Routine for parsing input from provided .trace files
 """
 
+import logging
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.CRITICAL)
+
 
 def parse_trace_file(file_path):
     """ Method to parse our trace files
@@ -8,14 +13,14 @@ def parse_trace_file(file_path):
     :return: a list of tuples, in this format: [(MEM_ADRR, R/W), ... ]
     """
     # handle error, in case we aren't passed a string
-    if not isinstance(file_path, basestring):
-        print "Must pass a filepath as a STRING to parseTraceFile()"
+    if not isinstance(file_path, str):
+        logger.info("Must pass a filepath as a STRING to parseTraceFile()")
         return None
 
     # read in each line from our trace file in order,
     # and store all the data points in a LIST called 'data_points'
     data_points = []
-    with open( file_path, "r") as f:
+    with open(file_path, "r") as f:
         data_points = f.readlines()
 
     # iterate through our data points list and split all of our data points
@@ -29,13 +34,14 @@ def parse_trace_file(file_path):
 
         # store mem address and r/w in local variables
         memory_address = split_string[0]
-        read_or_write  = split_string[1].rstrip('\n')   # strip the newline
+        read_or_write = split_string[1].rstrip('\n')  # strip the newline
 
         # add our local variables to the tuple list
         current_tuple = (memory_address, read_or_write)
         data_point_tuple_list.append(current_tuple)
 
     return data_point_tuple_list
+
 
 def hex_string_to_binary_int(hex_string):
     """ Method that takes a hexadecimal number encoded as a string,
@@ -46,9 +52,3 @@ def hex_string_to_binary_int(hex_string):
     hex_string_to_decimal_int = int(hex_string, 16)
     binary_int = bin(hex_string_to_decimal_int)
     return binary_int
-
-
-
-
-
-

@@ -9,19 +9,24 @@ Test and report on algorithms for page replacement in an Operating System
 Usage:  python vmsim.py -n <numframes> -a <opt|clock|aging|lru> [-r <refresh>] <tracefile>
 
 """
+import logging
 import sys
-import parseInput as parse
-import pageTable as pt
-import opt as opt
+import time
+
+import aging as aging
 import clock as clock
 import lru as lru
-import aging as aging
-import time
+import opt as opt
+import pageTable as pt
+import parseInput as parse
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.CRITICAL)
+
 
 ####################################
 ### PARSE INPUT FROM TRACE FILES ###
 ####################################
-
 
 
 ####################
@@ -35,14 +40,13 @@ def main():
     try:
         num_frames = int(cmdLineArgs[0])
     except:
-        print "Number of frames not specified properly."
-        print "Usage:  python vmsim.py -n <numframes> -a <opt|clock|aging|lru> [-r <refresh>] <tracefile>"
+        logger.error("Number of frames not specified properly.")
+        logger.info("Usage:  python vmsim.py -n <numframes> -a <opt|clock|aging|lru> [-r <refresh>] <tracefile>")
 
     algorithm = cmdLineArgs[1]
     if cmdLineArgs[2] is not None:
         refresh = float(cmdLineArgs[2])
     traceFile = cmdLineArgs[3]
-
 
     # parse the input and store it
     memory_addresses = parse.parse_trace_file(traceFile)
@@ -51,17 +55,14 @@ def main():
     # initialize our table
     pageTable = pt.PageTable(num_frames)
 
-
-
-
     # write opt algorithm
     if algorithm == "opt":
         t0 = time.time()
         OptAlgorithm = opt.Opt(pageTable, memory_addresses)
         OptAlgorithm.run_algorithm()
         t1 = time.time()
-        total = t1-t0
-        print "TOTAL RUNNING TIME IN MINUTES: " + str(total*0.0166667)
+        total = t1 - t0
+        logger.info("TOTAL RUNNING TIME IN MINUTES: " + str(total * 0.0166667))
 
 
     # write clock algorithm
@@ -70,8 +71,8 @@ def main():
         clock_algorithm = clock.Clock(pageTable, memory_addresses)
         clock_algorithm.run_algorithm()
         t1 = time.time()
-        total = t1-t0
-        print "TOTAL RUNNING TIME IN MINUTES: " + str(total*0.0166667)
+        total = t1 - t0
+        logger.info("TOTAL RUNNING TIME IN MINUTES: " + str(total * 0.0166667))
 
 
     # write aging algorithm
@@ -80,8 +81,8 @@ def main():
         aging_algorithm = aging.Aging(pageTable, memory_addresses, refresh)
         aging_algorithm.run_algorithm()
         t1 = time.time()
-        total = t1-t0
-        print "TOTAL RUNNING TIME IN MINUTES: " + str(total*0.0166667)
+        total = t1 - t0
+        logger.info("TOTAL RUNNING TIME IN MINUTES: " + str(total * 0.0166667))
 
 
     # write lru algorithm
@@ -90,16 +91,17 @@ def main():
         LRU_algorithm = lru.LRU(pageTable, memory_addresses)
         LRU_algorithm.run_algorithm()
         t1 = time.time()
-        total = t1-t0
-        print "TOTAL RUNNING TIME IN MINUTES: " + str(total*0.0166667)
+        total = t1 - t0
+        logger.info("TOTAL RUNNING TIME IN MINUTES: " + str(total * 0.0166667))
 
 
     else:
-        print "Invalid algorithm name. Acceptable choices are:" \
-              "\n\t- 'opt' \n\t- 'clock' \n\t- 'aging' \n\t- 'lru' " \
-              "\n\n\tNote: algorithm names are case sensitive\n"
+        logger.warning("Invalid algorithm name. Acceptable choices are:" \
+                       "\n\t- 'opt' \n\t- 'clock' \n\t- 'aging' \n\t- 'lru' " \
+                       "\n\n\tNote: algorithm names are case sensitive\n")
 
-        print "Usage:  python vmsim.py -n <numframes> -a <opt|clock|aging|lru> [-r <refresh>] <tracefile>\n"
+        logger.info(
+            "Usage:  python vmsim.py -n <numframes> -a <opt|clock|aging|lru> [-r <refresh>] <tracefile>\n")
     return
 
 
@@ -129,9 +131,7 @@ def getUserInput():
 
     # check that input is okay
     if algorithm_index == 0:
-        print "Usage:  python vmsim.py -n <numframes> -a <opt|clock|aging|lru> [-r <refresh>] <tracefile>"
-
-
+        logger.info("Usage:  python vmsim.py -n <numframes> -a <opt|clock|aging|lru> [-r <refresh>] <tracefile>")
 
     # get the num frames and algorithm selection
     num_frames = sys.argv[2]
@@ -143,7 +143,8 @@ def getUserInput():
     # if algorithm is aging
     if algorithm == "aging":
         if len(sys.argv) < 8:
-            print "Usage:  python vmsim.py -n <numframes> -a <opt|clock|aging|lru> [-r <refresh>] <tracefile>"
+            logger.warning(
+                "Usage:  python vmsim.py -n <numframes> -a <opt|clock|aging|lru> [-r <refresh>] <tracefile>")
             exit("Too few arguments. Please ensure there is a refresh rate.")
         # then we need a refresh rate
         refresh = sys.argv[refresh_index]
@@ -164,11 +165,9 @@ def getUserInput():
     return arglist
 
 
-
 ###################
 ### ENTRY POINT ###
 ###################
 
 if __name__ == "__main__":
     main()
-
