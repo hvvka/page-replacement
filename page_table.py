@@ -2,7 +2,7 @@
 #            This means we have 2^12 bits, or bottom 12 bits of our addresses reserved for
 #            intra-page addressing. The rest determine if we are using a page that's already in use
 #            So we're looking at the first 20 bits to see fi we've got a match...
-import circularQueue as cq
+import circular_queue as cq
 
 
 class PageTable:
@@ -27,9 +27,8 @@ class PageTable:
             next_frame = Frame()
             next_frame.dirty = False
             next_frame.in_use = False
-            # anything else we need to add, can add here
+
             self.frame_table.append(next_frame)
-        return
 
     def get_pte(self, memory_tuple):
         # get mem address and r/w bit from the tuples in our trace file
@@ -41,29 +40,34 @@ class PageTable:
         offset = self.get_page_offset(mem_addr)
 
     def get_VPN(self, memory_address):
+        """
+        :param memory_address:
+        :return:
+        """
         VPN_MASK = 0xFFFFF000  # 0b11111111111111111111000000000000 mask first 20 bits 0xFFFFF0000
         hex_int = int(memory_address, 16)
-        # binary_int = int(parse.hex_string_to_binary_int(memory_address), 16)
         vpn_value = hex_int & VPN_MASK
         return vpn_value
 
     def get_page_offset(self, memory_address):
+        """
+        :param memory_address:
+        :return:
+        """
         PAGE_OFFSET_MASK = 0x00000FFF  # 0b00000000000000000000111111111111 mask bottom 12 bits  0x00000FFFF
-        # binary_int = int(parse.hex_string_to_binary_int(memory_address), 16)
         hex_int = int(memory_address, 16)
         offset_value = hex_int & PAGE_OFFSET_MASK
         return offset_value
 
 
-class Frame():
+class Frame:
     def __init__(self):
         self.VPN = 0  # Virtual Page Number, or the number we use to determine if the page
         # is already in memory
         self.dirty = False  # D Bit
         self.in_use = False  # R Bit
         self.PPN = 0  # Physical page number, or index in the page table
-        self.instructions_until_next_reference = None  # How many instructions until
-        # this page is next used
+        self.instructions_until_next_reference = None  # How many instructions until this page is next used
 
         # reference bit, used for CLOCK algorithm
         self.reference = False
@@ -75,7 +79,7 @@ class Frame():
         self.last_reference = 0
 
 
-class VirtualAddress():
+class VirtualAddress:
     def __init__(self, address):
         self.virtual_page_number = None  # top 20 bits
         self.page_offset = None  # bottom 12 bits

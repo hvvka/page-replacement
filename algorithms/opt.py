@@ -3,12 +3,9 @@
 import logging
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.CRITICAL)
 
 
-## NEXT:  Change print statements to class variables and just write one statement at end, each time.
-##        Should speed up significantly.  Replace with variables and make a 1 line print statement for everything.
-class Opt():
+class Opt:
     """ An implementation of the optimal page replacement algorithm
     """
 
@@ -23,8 +20,14 @@ class Opt():
         self.evict = False
         self.dirty = False
 
+        # perform preprocessing
+        self.preprocess_trace()
+
     def get_next_address(self):
-        # consume current value at trace[0]. remove it from the list
+        """
+        consume current value at trace[0]. remove it from the list
+        :return: next address
+        """
         self.PAGE_TABLE.total_memory_accesses += 1
         return self.trace.pop(0)
 
@@ -32,16 +35,12 @@ class Opt():
         """ need to account for how long until the next memory access of all our current pages
             and this function helps us keep track
         """
-        """ OLD VERSION
-        for frame in self.PAGE_TABLE.frame_table:
-            if frame.instructions_until_next_reference is not None:
-                frame.instructions_until_next_reference -= 1
-        """
         # remove the 'next' memory access because it is the CURRENT access, it won't happen in the future
         list_of_memory_accesses = self.time_until_use_dict[vpn]
-        list_of_memory_accesses.pop(0)
+        if len(list_of_memory_accesses) > 0:
+            list_of_memory_accesses.pop(0)
         for frame in self.PAGE_TABLE.frame_table:
-            if frame.in_use == True:
+            if frame.in_use:
                 frame.instructions_until_next_reference -= 1
                 if frame.instructions_until_next_reference < -1:  # -1 means we just processed this address
                     frame.instructions_until_next_reference = self.find_time_until_next_access(vpn)
@@ -175,8 +174,6 @@ class Opt():
     def run_algorithm(self):
         """ run the opt algorithm on all memory accesses in our trace
         """
-        # perform preprocessing
-        self.preprocess_trace()
 
         # pop from the list while we still have elements in it
         while len(self.trace) > 0:
@@ -196,16 +193,16 @@ class Opt():
 
             # print trace to screen
             if self.hit:
-                logger.info("Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
+                logger.debug("Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
                             str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->HIT")
             elif not self.evict:
-                logger.info("Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
+                logger.debug("Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
                             str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - NO EVICTION")
             elif self.evict and not self.dirty:
-                logger.info("Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
+                logger.debug("Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
                             str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - EVICT CLEAN")
             else:
-                logger.info("Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
+                logger.debug("Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
                             str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - EVICT DIRTY")
 
         self.print_results()
@@ -262,7 +259,7 @@ class Opt():
             VPN = self.PAGE_TABLE.get_VPN(elem[0])
 
             # if our dictionary already has an instance of the VPN...
-            if self.time_until_use_dict.has_key(VPN):
+            if VPN in self.time_until_use_dict:
                 # then add the current index to the list of indices at which our VPN is needed
                 VPN_index_list = self.time_until_use_dict[VPN]
                 VPN_index_list.append(trace_index_number)
