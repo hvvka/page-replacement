@@ -2,6 +2,7 @@
 """
 import page_table as pt
 
+
 class CircularQueue:
 
     def __init__(self, queue_size):
@@ -13,7 +14,7 @@ class CircularQueue:
         self.qsize = queue_size
         self.pointer = 0
         self.list = []
-        for i in range (0, queue_size):
+        for i in range(0, queue_size):
             self.list.append(pt.Frame())
             self.list[i].PPN = i
 
@@ -51,16 +52,15 @@ class CircularQueue:
         removal_page.dirty = False
         removal_page.vpn = None
 
-
     def find_victim(self):
-        for index in range(0,self.qsize):
+        for index in range(0, self.qsize):
             elem = self.list[self.pointer]
             # if we find a page which is unreferenced (recently) and clean, that's our victim
             if elem.reference == False and elem.dirty == False:
                 # return it's PPN, so we can index into it and remove it
                 return elem.PPN
             elif elem.reference == False and elem.dirty == True:
-                #skip, do nothing
+                # skip, do nothing
                 continue
             elif elem.reference == True and elem.dirty == False:
                 elem.reference = False

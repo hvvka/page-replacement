@@ -24,7 +24,7 @@ class Clock():
     def add_page_or_update(self, mem_address):
 
         # first, try to add a page outright, and if it works, we're done
-        vpn = self.PAGE_TABLE.get_VPN(mem_address[0])
+        vpn = self.PAGE_TABLE.get_vpn(mem_address[0])
         read_or_write = mem_address[1]
 
         # if we don't successfully add or update...
@@ -72,7 +72,7 @@ class Clock():
 
             # pull out next item of the trace
             next_address = self.trace[0]
-            next_vpn = self.PAGE_TABLE.get_VPN(next_address[0])
+            next_vpn = self.PAGE_TABLE.get_vpn(next_address[0])
             # run it in our algorithm
             self.add_page_or_update(next_address)
             # then remove it from the trace, so it isn't processed a second time
