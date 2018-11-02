@@ -1,7 +1,6 @@
 """ 'Opt' (optimal)  Page Replacement Algorithm Implementation
 """
 import logging
-
 logger = logging.getLogger(__name__)
 
 
@@ -12,28 +11,28 @@ class Opt:
     def __init__(self, page_table, trace):
         self.PAGE_TABLE = page_table
         self.trace = trace
-        self.time_until_use_dict = {}  # HashTable, where the KEY=VPN, VALUE=[NUM_LOADS_UNTIL_USED]
-        # every iteration of the algorithm we need to subtract value by 1
+        # HashTable, where the KEY=VPN, VALUE=[NUM_LOADS_UNTIL_USED]
+        self.time_until_use_dict = {}
 
-        # string concatenation variables
         self.hit = False
         self.evict = False
         self.dirty = False
 
-        # perform preprocessing
         self.preprocess_trace()
 
     def get_next_address(self):
         """
-        consume current value at trace[0]. remove it from the list
+        Consume current value at trace[0] and remove it from the list.
         :return: next address
         """
         self.PAGE_TABLE.total_memory_accesses += 1
         return self.trace.pop(0)
 
     def update_counters(self, vpn):
-        """ need to account for how long until the next memory access of all our current pages
+        """
+            need to account for how long until the next memory access of all our current pages
             and this function helps us keep track
+        :param vpn:
         """
         # remove the 'next' memory access because it is the CURRENT access, it won't happen in the future
         list_of_memory_accesses = self.time_until_use_dict[vpn]
@@ -45,35 +44,49 @@ class Opt:
                 if frame.instructions_until_next_reference < -1:  # -1 means we just processed this address
                     frame.instructions_until_next_reference = self.find_time_until_next_access(vpn)
 
-    def find_time_until_next_access(self, vpn, counter=0):
+    def find_time_until_next_access(self, vpn):
+        """
+
+        :param vpn:
+        :return:
+        """
 
         next_index_used = self.time_until_use_dict[vpn][0]  # get the number at index 0
 
-        # if we get a None, then time until next access is NEVER, or the current trace length+1,
-        # which is effectively 'never'
-        if next_index_used == None:
+        if next_index_used is None:
+            # if None, then time until next access is NEVER, or the current trace length+1, which is effectively 'never'
             time_until_next_access = len(self.trace) + 1
-
-        # otherwise, we can calculate time until next use by subtracting the total # of memory acccesses,
-        # which is the current 'index' of the trace we're on, from the next index at which VPN appears
         else:
+            # otherwise calculate time until next use by subtracting the total amount of memory accesses,
+            # which is the current 'index' of the trace we're on, from the next index at which VPN appears
             time_until_next_access = next_index_used - self.PAGE_TABLE.total_memory_accesses
 
         return time_until_next_access
 
     def find_vpn_in_page_table(self, vpn):
+        """
+
+        :param vpn:
+        :return:
+        """
         page_index = None
 
         # search through and return index if it's there, None if it's not
         index = 0
         for frame in self.PAGE_TABLE.frame_table:
             if frame.VPN == vpn:
-                page_index = index
+                # page_index = index
+                return index
             index += 1
 
         return page_index
 
     def is_page_fault(self, vpn):
+        """
+
+        :param vpn:
+        :return:
+        """
         if vpn in self.PAGE_TABLE.fast_index:
             return False
         else:
@@ -82,6 +95,12 @@ class Opt:
             return True
 
     def add_vpn_to_page_table_or_update(self, vpn, r_or_w):
+        """
+
+        :param vpn:
+        :param r_or_w:
+        :return:
+        """
 
         if vpn in self.PAGE_TABLE.fast_index:
             # iterate through all the frames in the page table, and if there's an empty space, use it
@@ -121,8 +140,13 @@ class Opt:
                 self.add_vpn_to_page_table_or_update(vpn, r_or_w)
 
     def evict_vpn_from_page_table(self):
+        """
+
+        :return:
+        """
         least_needed = 0
         most_instructions = 0
+
         # get time until next reference for ALL pages in our page table currently
         for frame in self.PAGE_TABLE.frame_table:
             # but ONLY launch a search if we don't know how long until next reference yet
@@ -148,6 +172,9 @@ class Opt:
             self.dirty = False
 
     def run_algorithm(self):
+        """
+        :return:
+        """
         """ Run the opt algorithm on all memory accesses in the trace
         """
 
@@ -183,6 +210,10 @@ class Opt:
         self.print_results()
 
     def opt(self, memory_access):
+        """
+        :param memory_access:
+        :return:
+        """
         vpn = self.PAGE_TABLE.get_VPN(memory_access[0])
         read_or_write = memory_access[1]
 
@@ -197,10 +228,9 @@ class Opt:
         else:
             # page fault
 
-            # if page table isn't full, just add next memory address
-            # if page table is full, go through the whole list of accesses, and find the VPN
-            # that's in memory, which won't be used for the longest time in the future.
-            # pick THAT memory address and remove it
+            # if page table isn't full, add next memory address
+            # if page table is full, go through the whole list of accesses, and find the VPN that's in memory,
+            # which won't be used for the longest time in the future, pick THAT memory address and remove it
             self.add_vpn_to_page_table_or_update(vpn, read_or_write)
             # >>>>>>>>> When we go through the access list for each each page, assign it a value, how long until NEXT
             #          use... then, ONLY search when we don't know how long until next use, for NEW
@@ -208,6 +238,9 @@ class Opt:
             #     if dirty, write to disk, count a disk write
 
     def print_results(self):
+        """
+        :return:
+        """
         logger.info("Algorithm: Opt")
         logger.info("Number of frames:   " + str(len(self.PAGE_TABLE.frame_table)))
         logger.info("Total Memory Accesses: " + str(self.PAGE_TABLE.total_memory_accesses))
@@ -216,7 +249,11 @@ class Opt:
 
     def preprocess_trace(self):
         """
-          Build a dictionary with the following format: {vpn1: [index_used_1, index_used_2, ... index_used_n], vpn2: ..}
+        :return:
+        """
+        """
+          Build a dictionary with the following format: {vpn1: [index_used_1, index_used_2, ..., index_used_n], vpn2: ...}.
+          This information should be know before starting the opt algorithm.
         """
         trace_index_number = 0
 
@@ -226,15 +263,14 @@ class Opt:
 
             if vpn in self.time_until_use_dict:
                 # add the current index to the list of indices at which our vpn is needed
-                VPN_index_list = self.time_until_use_dict[vpn]
-                VPN_index_list.append(trace_index_number)
+                self.time_until_use_dict[vpn].append(trace_index_number)
             else:
                 # create entry in dictionary
                 self.time_until_use_dict[vpn] = [trace_index_number]
 
             trace_index_number += 1
 
-        # put a None to the end of the list to signal that this vpn is never used again
         for key in self.time_until_use_dict:
+            # put a None to the end of the list to signal that this vpn is never used again
             value_list = self.time_until_use_dict[key]
             value_list.append(None)

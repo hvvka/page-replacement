@@ -2,7 +2,7 @@
 """
 import page_table as pt
 
-class CircularQueue():
+class CircularQueue:
 
     def __init__(self, queue_size):
         """

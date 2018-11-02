@@ -44,9 +44,9 @@ class PageTable:
         :param memory_address:
         :return:
         """
-        VPN_MASK = 0xFFFFF000  # 0b11111111111111111111000000000000 mask first 20 bits 0xFFFFF0000
+        vpn_mask = 0xFFFFF000  # 0b11111111111111111111000000000000 mask first 20 bits 0xFFFFF0000
         hex_int = int(memory_address, 16)
-        vpn_value = hex_int & VPN_MASK
+        vpn_value = hex_int & vpn_mask
         return vpn_value
 
     def get_page_offset(self, memory_address):
@@ -54,9 +54,9 @@ class PageTable:
         :param memory_address:
         :return:
         """
-        PAGE_OFFSET_MASK = 0x00000FFF  # 0b00000000000000000000111111111111 mask bottom 12 bits  0x00000FFFF
+        page_offset_mask = 0x00000FFF  # 0b00000000000000000000111111111111 mask bottom 12 bits  0x00000FFFF
         hex_int = int(memory_address, 16)
-        offset_value = hex_int & PAGE_OFFSET_MASK
+        offset_value = hex_int & page_offset_mask
         return offset_value
 
 
