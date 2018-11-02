@@ -140,7 +140,7 @@ class Aging:
 
             # pull out next item of the trace
             next_address = self.trace[0]
-            next_vpn = self.PAGE_TABLE.get_VPN(next_address[0])
+            next_vpn = self.PAGE_TABLE.get_vpn(next_address[0])
             next_read_or_write = next_address[1]
 
             # run it in our algorithm

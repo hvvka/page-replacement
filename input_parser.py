@@ -2,25 +2,24 @@
 """
 
 import logging
+import os
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.CRITICAL)
 
 
 def parse_trace_file(file_path):
-    """ Method to parse our trace files
+    """ Method to parse trace files
     :param file_path: a string representing the relative file path to our trace in the filesystem
     :return: a list of tuples, in this format: [(MEM_ADRR, R/W), ... ]
     """
-    # handle error, in case we aren't passed a string
-    if not isinstance(file_path, str):
-        logger.info("Must pass a filepath as a STRING to parseTraceFile()")
+
+    if not os.path.isfile(file_path):
+        logger.error("Trace file doesn't exist")
         return None
 
-    # read in each line from our trace file in order,
-    # and store all the data points in a LIST called 'data_points'
+
     data_points = []
-    with open(file_path, "r") as f:
+    with open(file_path, "r", newline="\n") as f:
         data_points = f.readlines()
 
     # iterate through our data points list and split all of our data points
@@ -33,8 +32,8 @@ def parse_trace_file(file_path):
         split_string = data_points[value].split(" ")
 
         # store mem address and r/w in local variables
-        memory_address = split_string[0]
-        read_or_write = split_string[1].rstrip('\n')  # strip the newline
+        memory_address = split_string[0].strip()
+        read_or_write = split_string[1].strip()
 
         # add our local variables to the tuple list
         current_tuple = (memory_address, read_or_write)
