@@ -46,22 +46,7 @@ class Opt:
                     frame.instructions_until_next_reference = self.find_time_until_next_access(vpn)
 
     def find_time_until_next_access(self, vpn, counter=0):
-        """OLD VERSION
-        # for item in the trace, loop until we find next instance of of the vpn,
-        # increase a counter each time
-        # need also to translate the mem address into a vpn, and can do this with functions
-        # in the pagetable class
-        while not vpn == self.PAGE_TABLE.get_VPN(self.trace[counter][0]):
-            counter += 1
 
-            # check if we'd get an out of bounds exception,
-            # and if so, return a number 1 greater than the length of our current trace
-            if counter >= len(self.trace):
-                break
-
-        # once we find the next occurrence of the vpn, return it
-        return counter
-        """
         next_index_used = self.time_until_use_dict[vpn][0]  # get the number at index 0
 
         # if we get a None, then time until next access is NEVER, or the current trace length+1,
@@ -88,20 +73,18 @@ class Opt:
 
         return page_index
 
-    def check_for_page_fault(self, vpn):
+    def is_page_fault(self, vpn):
         if vpn in self.PAGE_TABLE.fast_index:
             return False
         else:
             self.PAGE_TABLE.page_faults += 1
-            # print "\t-> PAGE FAULT"
             self.hit = False
             return True
 
-    def add_vpn_to_page_table_or_update(self, vpn, R_or_W):
-        # iterate through all the frames in the page table,
-        # and if there's an empty space, use it
+    def add_vpn_to_page_table_or_update(self, vpn, r_or_w):
+
         if vpn in self.PAGE_TABLE.fast_index:
-            # print "\t-> NO EVICTION"
+            # iterate through all the frames in the page table, and if there's an empty space, use it
             self.evict = False
             frame_index = self.PAGE_TABLE.fast_index[vpn]
             frame = self.PAGE_TABLE.frame_table[frame_index]
@@ -111,36 +94,31 @@ class Opt:
             frame.PPN = frame_index
             frame.instructions_until_next_reference = self.find_time_until_next_access(vpn)
             self.PAGE_TABLE.fast_index[vpn] = frame.PPN
-            # if we have a write, then the page is dirty
-            if R_or_W == 'W':
+            if r_or_w == 'W':
                 frame.dirty = True
-            return
+        else:
+            # otherwise, search for a free space
+            page_added = False
+            index = 0
+            for frame in self.PAGE_TABLE.frame_table:
+                # then set this frame to in use
+                if not frame.in_use:
+                    page_added = True
+                    frame.in_use = True
+                    frame.dirty = False
+                    frame.VPN = vpn
+                    frame.PPN = index
+                    frame.instructions_until_next_reference = self.find_time_until_next_access(vpn)
+                    self.PAGE_TABLE.fast_index[vpn] = frame.PPN
+                    if r_or_w == 'W':
+                        frame.dirty = True
+                    break
+                index += 1
 
-        # otherwise, search for a free space
-        page_added = False
-        index = 0
-        for frame in self.PAGE_TABLE.frame_table:
-            # then set this frame to in use
-            if not frame.in_use:
-                # print "\t-> NO EVICTION"
-                # self.evict = False
-                page_added = True
-                frame.in_use = True
-                frame.dirty = False
-                frame.VPN = vpn
-                frame.PPN = index
-                frame.instructions_until_next_reference = self.find_time_until_next_access(vpn)
-                self.PAGE_TABLE.fast_index[vpn] = frame.PPN
-                # if we have a write, then the page is dirty
-                if R_or_W == 'W':
-                    frame.dirty = True
-                break
-            index += 1
-
-        # if we don't have any free pages, then we need to pick a page to evict, and try again
-        if page_added == False:
-            self.evict_vpn_from_page_table()
-            self.add_vpn_to_page_table_or_update(vpn, R_or_W)
+            if not page_added:
+                # if no free pages, then pick a page to evict, and try again
+                self.evict_vpn_from_page_table()
+                self.add_vpn_to_page_table_or_update(vpn, r_or_w)
 
     def evict_vpn_from_page_table(self):
         least_needed = 0
@@ -163,16 +141,14 @@ class Opt:
         removal_frame.instructions_until_next_reference = None
         if removal_frame.dirty:
             self.PAGE_TABLE.writes_to_disk += 1
-            # print "\t-> EVICT DIRTY\n"
             self.evict = True
             self.dirty = True
         else:
-            # print "\t-> EVICT CLEAN"
             self.evict = True
             self.dirty = False
 
     def run_algorithm(self):
-        """ run the opt algorithm on all memory accesses in our trace
+        """ Run the opt algorithm on all memory accesses in the trace
         """
 
         # pop from the list while we still have elements in it
@@ -182,56 +158,48 @@ class Opt:
             self.evict = False
             self.dirty = False
 
-            # get next address and vpn from our trace
+            # get next address and vpn from the trace
             next_address = self.get_next_address()
             next_vpn = self.PAGE_TABLE.get_VPN(next_address[0])
 
             # update our counters for how many instructions until next usage of all pages in our page table
             self.update_counters(next_vpn)
-            # then, run the algorithm
+            # run the algorithm
             self.opt(next_address)
 
-            # print trace to screen
             if self.hit:
                 logger.debug("Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
-                            str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->HIT")
+                             str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->HIT")
             elif not self.evict:
                 logger.debug("Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
-                            str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - NO EVICTION")
+                             str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - NO EVICTION")
             elif self.evict and not self.dirty:
                 logger.debug("Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
-                            str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - EVICT CLEAN")
+                             str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - EVICT CLEAN")
             else:
                 logger.debug("Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
-                            str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - EVICT DIRTY")
+                             str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - EVICT DIRTY")
 
         self.print_results()
 
     def opt(self, memory_access):
-        # what are the steps for opt?
-        # I think we need to run the whole trace... but this strategy may work elsewhere
         vpn = self.PAGE_TABLE.get_VPN(memory_access[0])
         read_or_write = memory_access[1]
 
-        # if page IS in table, just check if we have a write, and if we do have a write,
-        # then set the dirty bit to true
-        if self.check_for_page_fault(vpn) == False:  # if we do NOT have a page fault
-            # the page is already present in table
-            # and if page is in the table, we don't have to do anything else,
-            # just set dirty bit if we're writing
+        if not self.is_page_fault(vpn):
+            # no page fault - page is in the table
             if read_or_write == 'W':
+                # set dirty bit if writing (W)
                 page_index = self.find_vpn_in_page_table(vpn)
                 self.PAGE_TABLE.frame_table[page_index].dirty = True
-            # print to trace that we have a hit
-            # print "\t-> HIT\n"
             self.hit = True
 
-        # else, page fault (make it +1; done in check_for_page_fault() fn),
-        # and run the algorithm
         else:
-            # if page table isn't full, then we just add next memory address
-            # if page table IS full, then go through the WHOLE list of accesses, and find the VPN
-            # that's IN memory, which won't be used for the longest time in the future.
+            # page fault
+
+            # if page table isn't full, just add next memory address
+            # if page table is full, go through the whole list of accesses, and find the VPN
+            # that's in memory, which won't be used for the longest time in the future.
             # pick THAT memory address and remove it
             self.add_vpn_to_page_table_or_update(vpn, read_or_write)
             # >>>>>>>>> When we go through the access list for each each page, assign it a value, how long until NEXT
@@ -248,31 +216,25 @@ class Opt:
 
     def preprocess_trace(self):
         """
-          Build a dictionary with the following format: {VPN: [index_used_1, index_used_2, ... index_used_n], VPN2: ..}
+          Build a dictionary with the following format: {vpn1: [index_used_1, index_used_2, ... index_used_n], vpn2: ..}
         """
-        # want to ONLY iterate through the trace ONCE and pre-process the values we need,
-        # so we can get to them faster and easier
         trace_index_number = 0
+
         for elem in self.trace:
+            # get a handle to the vpn at the current index
+            vpn = self.PAGE_TABLE.get_VPN(elem[0])
 
-            # get a handle to the VPN at the current index
-            VPN = self.PAGE_TABLE.get_VPN(elem[0])
-
-            # if our dictionary already has an instance of the VPN...
-            if VPN in self.time_until_use_dict:
-                # then add the current index to the list of indices at which our VPN is needed
-                VPN_index_list = self.time_until_use_dict[VPN]
+            if vpn in self.time_until_use_dict:
+                # add the current index to the list of indices at which our vpn is needed
+                VPN_index_list = self.time_until_use_dict[vpn]
                 VPN_index_list.append(trace_index_number)
-
-            # otherwise, we need to make a new entry in the dictionary, and a new list
             else:
-                # just give the new key a list with our current trace index number to start with
-                self.time_until_use_dict[VPN] = [trace_index_number]
+                # create entry in dictionary
+                self.time_until_use_dict[vpn] = [trace_index_number]
 
-            # update the index number that we are looking at
             trace_index_number += 1
 
-        # Once we're done, put a None to the end of the list to signal that this VPN is never used again
+        # put a None to the end of the list to signal that this vpn is never used again
         for key in self.time_until_use_dict:
             value_list = self.time_until_use_dict[key]
             value_list.append(None)
