@@ -1,6 +1,6 @@
-#VMsim
-@author Tony Poerio  
-@email tony@tonypoer.io  
+# page-replacement
+
+[Original project – VMsim](https://github.com/adpoe/Page-Replacement-Simulator) by [Tony Poerio](mailto:tony@tonypoer.io).
   
 Simulation and Data Analysis for 4 different Page Replacement Algorithms  
 
