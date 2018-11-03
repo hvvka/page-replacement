@@ -6,7 +6,7 @@ import logging
 import os
 import sys
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 def parse_trace_file(file_path):
@@ -17,14 +17,14 @@ def parse_trace_file(file_path):
     """
 
     if not os.path.isfile(file_path):
-        logger.error("Trace file {} doesn't exist.87uqw w".format(file_path))
+        LOGGER.error("Trace file '%s' doesn't exist.", file_path)
         return None
 
     try:
         with open(file_path, "r", newline="\n") as f:
             data_points = f.readlines()
     except IOError:
-        logger.error("Exception while reading trace file '{}'. Terminating.".format(file_path))
+        LOGGER.error("Exception while reading trace file '%s'. Terminating.", file_path)
         sys.exit(0)
 
     data_point_tuple_list = []
@@ -41,12 +41,6 @@ def parse_trace_file(file_path):
 
 
 def hex_string_to_binary_int(hex_string):
-    """
-    Method that takes a hexadecimal number encoded as a string,
-    and outputs that same number as a binary int
-    :param hex_string: a string representing a hex number
-    :return: that same hex number, encoded as a binary int
-    """
     hex_string_to_decimal_int = int(hex_string, 16)
     binary_int = bin(hex_string_to_decimal_int)
     return binary_int
