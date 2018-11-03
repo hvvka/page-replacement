@@ -82,7 +82,7 @@ class Frame:
         self.VPN = 0
         self.dirty = False
         self.in_use = False
-        self.PPN = 0
+        self.ppn = 0
         self.instructions_until_next_reference = None
 
         self.reference = False
