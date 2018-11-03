@@ -62,10 +62,9 @@ class Clock:
             self.page_table.page_faults += 1
             self.evict = True
 
-            victim_frame = self.frame_queue.find_victim_frame()
+            victim_frame = self.frame_queue.find_victim()
             victim_frame = self.run_swap_demon(victim_frame)
 
-            # Remove the victim page
             self.frame_queue.remove(victim_frame)
 
             # Add the frame in the newly freed space
@@ -93,7 +92,7 @@ class Clock:
                 self.dirty = True
 
             # Get a victim page, since there must be one now that we've flushed
-            victim_frame = self.frame_queue.find_victim_frame()
+            victim_frame = self.frame_queue.find_victim()
         return victim_frame
 
     def print_trace(self, next_address, next_vpn):

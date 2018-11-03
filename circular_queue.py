@@ -1,27 +1,32 @@
-""" a circular queue implementation for use in the clock algorithm
+"""
+Circular queue implementation for use in the clock algorithm
 """
 import page_table as pt
 
 
 class CircularQueue:
+    """
+    Circular queue structure that takes initial size as parameter
+    """
 
     def __init__(self, queue_size):
         """
-        Must be a Queue of Frames
-        :param queue_size:
-        :return:
+        Must be a queue of frames
+        :param queue_size: initial queue size
         """
         self.qsize = queue_size
         self.pointer = 0
         self.list = []
         for i in range(0, queue_size):
             self.list.append(pt.Frame())
-            self.list[i].PPN = i
+            self.list[i].ppn = i
 
     def add_or_update_successful(self, vpn, read_or_write):
         """
-        :param frame: A frame to add to the Queue
-        :return: False if a frame was NOT added, because the queue is full (will be page fault), True otherwise
+        :param vpn: a frame to be added to the queue
+        :param read_or_write: specifies memory access mode
+        :return: False if a frame was NOT added, because the queue is full (will be page fault)
+                 True otherwise
         """
         # set sentinel value
         added = False
@@ -30,22 +35,24 @@ class CircularQueue:
         for elem in self.list:
             # if we have an element NOT in use, then we can add there
             # also need to check if we're just doing an update
-            if elem.in_use == False or elem.VPN == vpn:
+            if not elem.in_use or elem.VPN == vpn:
                 added = True
                 elem.in_use = True
                 elem.VPN = vpn
                 # if we're doing a write, need to set dirty bit
-                if read_or_write == 'W':
-                    elem.dirty = True
+                elem.dirty = read_or_write == 'W'
                 # if we're not writing, then we're reading, and so we need to set the reference bit
-                else:
-                    elem.reference = True
+                elem.reference = read_or_write != 'W'
 
                 return added
 
         return added
 
     def remove(self, ppn):
+        """
+        Removes page from queue
+        :param ppn: the victim page
+        """
         removal_page = self.list[ppn]
         removal_page.in_use = False
         removal_page.referenced = False
@@ -53,19 +60,18 @@ class CircularQueue:
         removal_page.vpn = None
 
     def find_victim(self):
-        for index in range(0, self.qsize):
+        """
+        Get a victim page
+        :return: victim frame
+        """
+        for _ in range(0, self.qsize):
             elem = self.list[self.pointer]
             # if we find a page which is unreferenced (recently) and clean, that's our victim
-            if elem.reference == False and elem.dirty == False:
+            if not elem.reference and not elem.dirty:
                 # return it's PPN, so we can index into it and remove it
-                return elem.PPN
-            elif elem.reference == False and elem.dirty == True:
-                # skip, do nothing
-                continue
-            elif elem.reference == True and elem.dirty == False:
-                elem.reference = False
-                elem.dirty = False
-            elif elem.reference == True and elem.dirty == True:
+                return elem.ppn
+
+            if elem.reference:
                 elem.reference = False
 
             # use modulus of queue size to achieve a circular queue
@@ -79,12 +85,14 @@ class CircularQueue:
         return None
 
     def flush_dirty_and_unreferenced_pages(self):
-        # NOTE: need to account for a DISK WRITE in clock algorithm
-
-        # remove the dirty and unreferenced pages, count how many we removed
+        """
+        Runs the swap daemon
+        NOTE: need to account for a DISK WRITE in clock algorithm
+        :return: the number of removed pages/disk writes
+        """
         number_of_disk_writes = 0
         for elem in self.list:
-            if elem.dirty == True and elem.reference == False:
+            if elem.dirty and not elem.reference:
                 elem.dirty = False
                 number_of_disk_writes += 1
 
