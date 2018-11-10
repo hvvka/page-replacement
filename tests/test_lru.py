@@ -3,15 +3,15 @@ import unittest
 import algorithms.lru as lru
 import input_parser as parser
 import page_table as pt
+import tests.test_config as params
 
 
 class TestLru(unittest.TestCase):
 
     def setUp(self):
-        num_frames = 8
-        file_path = './resources/test.trace'
-        self.page_table = pt.PageTable(num_frames)
-        self.memory_addresses = parser.parse_trace_file(file_path)
+        self.params = params.PublicParams()
+        self.page_table = pt.PageTable(self.params.frames)
+        self.memory_addresses = parser.parse_trace_file(self.params.trace_path)
         print(self.page_table)
         print(self.memory_addresses)
 
