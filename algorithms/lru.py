@@ -2,14 +2,19 @@
 Least Recently Used page replacement algorithm implementation
 """
 
-# Hit or new item:  add to page table and mark in hash table the memory load #
-# Miss:   go through hash table, find lowest #, outright, since numbers are growing, evict it. call add again
 import logging
 
 LOG = logging.getLogger(__name__)
 
 
 class LRU:
+    """
+    Provides LRU page replacement algorithm implementation
+    for given table of pages and trace dataset
+
+    Hit or new item:  add to page table and mark in hash table the memory load #
+    Miss:   go through hash table, find lowest #, outright, since numbers are growing, evict it. call add again
+    """
 
     def __init__(self, page_table, trace):
         # set the variables for our algorithm
@@ -25,12 +30,21 @@ class LRU:
         self.dirty = False
 
     def initialize_ppns(self):
+        """
+        Assigns PPNs (Physical Page Numbers) to each frame from page_table.
+        """
         counter = 0
         for elem in self.frame_list:
             elem.PPN = counter
             counter += 1
 
     def add_or_update_successful(self, vpn, read_or_write):
+        """
+        Takes care of next page in trace
+        :param vpn: virtual page number
+        :param read_or_write: read or write action
+        :return: boolean: hit == true, evict == false
+        """
         # first check if we have a hit
         for elem in self.frame_list:
             if elem.VPN == vpn:
@@ -48,7 +62,6 @@ class LRU:
                 # selected VPN was accessed
                 else:
                     elem.last_reference = self.page_table.total_memory_accesses
-                # and return
                 return True
         else:
             self.hit = False
@@ -61,6 +74,12 @@ class LRU:
             return False
 
     def add_after_page_fault(self, vpn, read_or_write):
+        """
+        Adds to an empty space
+        :param vpn: virtual page number
+        :param read_or_write: read or write action
+        :return: boolean: true == page was added, false == all items are in use
+        """
         for elem in self.frame_list:
             if not elem.in_use:
                 elem.in_use = True
@@ -71,13 +90,15 @@ class LRU:
                 else:
                     # if we have a read, mark our reference
                     elem.last_reference = self.page_table.total_memory_accesses
-                # and return
                 return True
 
         # if we make it this far, then all items are in use, so return false
         return False
 
     def evict_page(self):
+        """
+        Gets rid of last page
+        """
         lowest_value = None
         lowest_value_ppn = 0
 
@@ -93,6 +114,10 @@ class LRU:
         self.remove(lowest_value_ppn)
 
     def remove(self, ppn):
+        """
+        Removes selected ppn from page_table
+        :param ppn: physical page number (index)
+        """
         removal_page = self.frame_list[ppn]
         # if the page is dirty, we need to do a disk write
         if removal_page.dirty:
@@ -102,6 +127,10 @@ class LRU:
         removal_page.vpn = None
 
     def run_algorithm(self):
+        """
+        Executes LRU algorithm
+        :return: tuple with algorithm final result
+        """
         # keep track of our memory accesses
         self.page_table.total_memory_accesses = 0
 
@@ -118,14 +147,11 @@ class LRU:
             next_read_or_write = next_address[1]
 
             # run it in our algorithm
-            """ ALGORITHM HERE """
             if not self.add_or_update_successful(next_vpn, next_read_or_write):
                 self.add_after_page_fault(next_vpn, next_read_or_write)
-            """ END ALGORITHM """
 
             # then remove it from the trace, so it isn't processed a second time
             self.trace.pop(0)
-
             self.page_table.total_memory_accesses += 1
 
             self.print_trace(next_address, next_vpn)
@@ -135,6 +161,11 @@ class LRU:
                 self.page_table.page_faults, self.page_table.writes_to_disk)
 
     def print_trace(self, next_address, next_vpn):
+        """
+        Prints result for one page in trace
+        :param next_address: next page address
+        :param next_vpn: next virtual page number
+        """
         if self.hit:
             LOG.debug("Memory address: %s VPN=%s:: number %s \n\t->HIT",
                       str(next_address[0]), str(next_vpn),
@@ -160,6 +191,9 @@ class LRU:
             self.page_table.writes_to_disk += 1
 
     def print_results(self):
+        """
+        Prints algorithm final result
+        """
         LOG.info("Algorithm: LRU")
         LOG.info("Number of frames:   %s", str(len(self.page_table.frame_table)))
         LOG.info("Total Memory Accesses: %s", str(self.page_table.total_memory_accesses))
