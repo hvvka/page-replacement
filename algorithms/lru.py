@@ -131,6 +131,8 @@ class LRU:
             self.print_trace(next_address, next_vpn)
 
         self.print_results()
+        return (len(self.page_table.frame_table), self.page_table.total_memory_accesses,
+                self.page_table.page_faults, self.page_table.writes_to_disk)
 
     def print_trace(self, next_address, next_vpn):
         if self.hit:
