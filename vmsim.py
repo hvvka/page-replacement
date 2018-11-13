@@ -73,9 +73,9 @@ def main():
         logger.info("TOTAL RUNNING TIME: " + str(total))
 
     elif algorithm == "lru":
-        LRU_algorithm = lru.LRU(page_table, memory_addresses)
+        lru_algorithm = lru.LRU(page_table, memory_addresses)
         t0 = datetime.datetime.now()
-        LRU_algorithm.run_algorithm()
+        lru_algorithm.run_algorithm()
         t1 = datetime.datetime.now()
         total = t1 - t0
         logger.info("TOTAL RUNNING TIME: " + str(total))
