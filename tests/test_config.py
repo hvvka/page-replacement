@@ -13,6 +13,7 @@ class PublicParams:
     def __init__(self):
         data = self.parse_params()
         self.frames = int(data['frames'])
+        self.refresh = int(data['refresh'])
         self.trace_path = data['trace_path']
 
     def parse_params(self):

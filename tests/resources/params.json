@@ -1,4 +1,5 @@
 {
   "frames": "8",
+  "refresh": "5",
   "trace_path": "./resources/test.trace"
 }

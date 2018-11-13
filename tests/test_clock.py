@@ -1,12 +1,12 @@
 import unittest
 
-import algorithms.lru as lru
+import algorithms.clock as clock
 import input_parser as parser
 import page_table as pt
 import tests.test_config as params
 
 
-class TestLru(unittest.TestCase):
+class TestClock(unittest.TestCase):
 
     def setUp(self):
         self.params = params.PublicParams()
@@ -14,8 +14,8 @@ class TestLru(unittest.TestCase):
         self.memory_addresses = parser.parse_trace_file(self.params.trace_path)
 
     def test_algorithm(self):
-        lru_algorithm = lru.LRU(self.page_table, self.memory_addresses)
-        lru_algorithm.run_algorithm()
+        clock_algorithm = clock.Clock(self.page_table, self.memory_addresses)
+        clock_algorithm.run_algorithm()
 
 
 if __name__ == '__main__':
