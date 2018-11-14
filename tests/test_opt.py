@@ -17,6 +17,10 @@ class TestOpt(unittest.TestCase):
         opt_algorithm = opt.Opt(self.page_table, self.memory_addresses)
         opt_algorithm.run_algorithm()
 
+        self.assertEqual(10, opt_algorithm.page_table.total_memory_accesses)
+        self.assertEqual(7, opt_algorithm.page_table.page_faults)
+        self.assertEqual(3, opt_algorithm.page_table.writes_to_disk)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -2,6 +2,7 @@
 OPT (optimal) page replacement algorithm implementation
 """
 import logging
+import sys
 
 LOG = logging.getLogger(__name__)
 
@@ -34,13 +35,13 @@ class Opt:
     def update_counters(self, vpn):
         """
         Update our counters for how many instructions until next usage of all pages in our page table.
-        Pops vpn usage from time_until_use_dict, decrements PAGE_TABLE.frame_table "in_use" frames.
-        updates counters in PAGE_TABLE.
+        Pops vpn usage from time_until_use_dict, decrements page_table.frame_table "in_use" frames.
+        Updates counters in page_table.
         frame.instructions_until_next_reference < -1: means that this address was just processed
         :param vpn: virtual page number
         """
         list_of_memory_accesses = self.time_until_use_dict[vpn]
-        if len(list_of_memory_accesses) > 0:
+        if list_of_memory_accesses:
             list_of_memory_accesses.pop(0)
         for frame in self.page_table.frame_table:
             if frame.in_use:
@@ -103,25 +104,13 @@ class Opt:
         for new otherwise subtract 1 from the values in the table each mem load
         if dirty, write to disk, count a disk write
 
-        Checks if vpn is already in PAGE_TABLE.
+        Checks if vpn is already in page_table.
         If it is, iterate through all the frames in the page table, and if there's an empty space, use it.
         :param vpn: virtual page number
         :param r_or_w: read or write type of access
         """
 
-        if vpn in self.page_table.fast_index:
-            self.evict = False
-            frame_index = self.page_table.fast_index[vpn]
-            frame = self.page_table.frame_table[frame_index]
-            frame.in_use = True
-            frame.dirty = False
-            frame.vpn = vpn
-            frame.ppn = frame_index
-            frame.instructions_until_next_reference = self.find_time_until_next_access(vpn)
-            self.page_table.fast_index[vpn] = frame.ppn
-            if r_or_w == 'W':
-                frame.dirty = True
-        else:
+        if vpn not in self.page_table.fast_index:
             page_added = False
             index = 0
             for frame in self.page_table.frame_table:
@@ -141,6 +130,8 @@ class Opt:
             if not page_added:
                 self.evict_vpn_from_page_table()
                 self.add_vpn_to_page_table_or_update(vpn, r_or_w)
+        else:
+            raise Exception("VPN should not be in page_table!")
 
     def evict_vpn_from_page_table(self):
         """
@@ -174,7 +165,7 @@ class Opt:
         Run the opt algorithm on all memory accesses in the trace
         :return:
         """
-        while len(self.trace) > 0:
+        while self.trace:
             self.hit = False
             self.evict = False
             self.dirty = False
@@ -197,6 +188,11 @@ class Opt:
             else:
                 LOG.debug("Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
                           str(self.page_table.total_memory_accesses) + "\n\t->PAGE FAULT - EVICT DIRTY")
+
+            LOG.debug("Page table:")
+            for page in self.page_table.frame_table:
+                LOG.debug("%s", page)
+            LOG.debug("")
 
         self.print_results()
         result_tup = (len(self.page_table.frame_table), self.page_table.total_memory_accesses,

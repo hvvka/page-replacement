@@ -45,7 +45,7 @@ class PageTable:
         vpn_mask = 0xFFFFF000
         hex_int = int(memory_address, 16)
         vpn_value = hex_int & vpn_mask
-        return vpn_value
+        return vpn_value >> 12
 
 
 class Frame:
@@ -67,3 +67,8 @@ class Frame:
         self.aging_value = 0
         # last referenced used by LRU algorithm
         self.last_reference = 0
+
+    def __repr__(self):
+        return "vpn:\t{}\tppn:\t{}\tdirty:\t{}\tin_use:\t{}\tinstr_until_next_ref:\t{}\treference:\t{}\taging_value:\t{}\tlast_reference\t{}\t".format(
+            self.vpn, self.ppn, self.dirty, self.in_use, self.instructions_until_next_reference, self.reference,
+            self.aging_value, self.last_reference)
