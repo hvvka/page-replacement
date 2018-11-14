@@ -22,7 +22,7 @@ class PageTable:
 
         self.frame_table = list()
 
-        for frame in range(0, self.num_frames):
+        for _ in range(0, self.num_frames):
             next_frame = Frame()
             next_frame.dirty = False
             next_frame.in_use = False

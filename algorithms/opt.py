@@ -85,12 +85,11 @@ class Opt:
         :param vpn: virtual page number
         :return: boolean
         """
-        if vpn in self.page_table.fast_index:
-            return False
-        else:
+        if vpn not in self.page_table.fast_index:
             self.page_table.page_faults += 1
             self.hit = False
             return True
+        return False
 
     def add_vpn_to_page_table_or_update(self, vpn, r_or_w):
         """
@@ -177,17 +176,25 @@ class Opt:
             self.opt(next_address)
 
             if self.hit:
-                LOG.debug("Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
-                          str(self.page_table.total_memory_accesses) + "\n\t->HIT")
+                LOG.debug("Memory address: %s VPN=%s:: number %s \n\t->HIT",
+                          next_address[0],
+                          next_vpn,
+                          self.page_table.total_memory_accesses)
             elif not self.evict:
-                LOG.debug("Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
-                          str(self.page_table.total_memory_accesses) + "\n\t->PAGE FAULT - NO EVICTION")
+                LOG.debug("Memory address: %s VPN=%s:: number %s \n\t->PAGE FAULT - NO EVICTION",
+                          next_address[0],
+                          next_vpn,
+                          self.page_table.total_memory_accesses)
             elif self.evict and not self.dirty:
-                LOG.debug("Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
-                          str(self.page_table.total_memory_accesses) + "\n\t->PAGE FAULT - EVICT CLEAN")
+                LOG.debug("Memory address: %s VPN=%s:: number %s \n\t->PAGE FAULT - EVICT CLEAN",
+                          next_address[0],
+                          next_vpn,
+                          self.page_table.total_memory_accesses)
             else:
-                LOG.debug("Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
-                          str(self.page_table.total_memory_accesses) + "\n\t->PAGE FAULT - EVICT DIRTY")
+                LOG.debug("Memory address: %s VPN=%s:: number %s \n\t->PAGE FAULT - EVICT DIRTY",
+                          next_address[0],
+                          next_vpn,
+                          self.page_table.total_memory_accesses)
 
             LOG.debug("Page table:")
             for page in self.page_table.frame_table:
@@ -221,11 +228,11 @@ class Opt:
         """
         Prints algorithm results on the screen
         """
-        LOG.info("Algorithm: Opt")
-        LOG.info("Number of frames:   " + str(len(self.page_table.frame_table)))
-        LOG.info("Total Memory Accesses: " + str(self.page_table.total_memory_accesses))
-        LOG.info("Total Page Faults: " + str(self.page_table.page_faults))
-        LOG.info("Total Writes to Disk: " + str(self.page_table.writes_to_disk))
+        LOG.info("Algorithm:             OPT")
+        LOG.info("Number of frames:      %s", len(self.page_table.frame_table))
+        LOG.info("Total Memory Accesses: %s", self.page_table.total_memory_accesses)
+        LOG.info("Total Page Faults:     %s", self.page_table.page_faults)
+        LOG.info("Total Writes to Disk:  %s", self.page_table.writes_to_disk)
 
     def preprocess_trace(self):
         """
