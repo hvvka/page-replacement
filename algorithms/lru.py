@@ -35,7 +35,7 @@ class LRU:
         """
         counter = 0
         for elem in self.frame_list:
-            elem.PPN = counter
+            elem.ppn = counter
             counter += 1
 
     def add_or_update_successful(self, vpn, read_or_write):
@@ -47,14 +47,14 @@ class LRU:
         """
         # first check if we have a hit
         for elem in self.frame_list:
-            if elem.VPN == vpn:
+            if elem.vpn == vpn:
                 # mark that we had a hit
                 self.hit = True
 
                 # add the page
                 # set values accordingly
                 elem.in_use = True
-                elem.VPN = vpn
+                elem.vpn = vpn
                 # if we're doing a write, need to set dirty bit
                 if read_or_write == 'W':
                     elem.dirty = True
@@ -83,7 +83,7 @@ class LRU:
         for elem in self.frame_list:
             if not elem.in_use:
                 elem.in_use = True
-                elem.VPN = vpn
+                elem.vpn = vpn
                 # if we're doing a write, need to set dirty bit
                 if read_or_write == 'W':
                     elem.dirty = True
@@ -108,7 +108,7 @@ class LRU:
             # find the lowest value overall, and get its PPN and VPN
             if lowest_value is None or value < lowest_value:
                 lowest_value = value
-                lowest_value_ppn = elem.PPN
+                lowest_value_ppn = elem.ppn
 
         # remove the lowest value vpn
         self.remove(lowest_value_ppn)

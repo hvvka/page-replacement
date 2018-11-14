@@ -35,10 +35,10 @@ class CircularQueue:
         for elem in self.list:
             # if we have an element NOT in use, then we can add there
             # also need to check if we're just doing an update
-            if not elem.in_use or elem.VPN == vpn:
+            if not elem.in_use or elem.vpn == vpn:
                 added = True
                 elem.in_use = True
-                elem.VPN = vpn
+                elem.vpn = vpn
                 # if we're doing a write, need to set dirty bit
                 elem.dirty = read_or_write == 'W'
                 # if we're not writing, then we're reading, and so we need to set the reference bit

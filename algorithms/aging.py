@@ -21,7 +21,7 @@ class Aging:
         index = 0
         # set our PPNs ins the page table
         for elem in self.frame_queue:
-            elem.PPN = index
+            elem.ppn = index
             index += 1
 
         # output variables
@@ -66,11 +66,11 @@ class Aging:
         for elem in self.frame_queue:
             # gather info on the page values, as we do it
             if elem.aging_value < lowest_value_overall:
-                lowest_value_page_number = elem.PPN
+                lowest_value_page_number = elem.ppn
                 lowest_value_overall = elem.aging_value
 
             # check for it a hit
-            if elem.VPN == vpn:
+            if elem.vpn == vpn:
                 # mark hit as true
                 self.hit = True
                 # if we're doing a write, the element is dirty
@@ -88,7 +88,7 @@ class Aging:
             if elem.in_use == False:
                 # set values accordingly
                 elem.in_use = True
-                elem.VPN = vpn
+                elem.vpn = vpn
                 # if we're doing a write, need to set dirty bit
                 if read_or_write == 'W':
                     elem.dirty = True
