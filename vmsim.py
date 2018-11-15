@@ -96,6 +96,5 @@ def main():
     output_file = create_results_dir(trace_file, num_frames)
     serialize_results(results, output_file)
 
-
 if __name__ == "__main__":
     main()
