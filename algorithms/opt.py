@@ -1,8 +1,10 @@
 """
 OPT (optimal) page replacement algorithm implementation
 """
+
 import logging
-import sys
+
+import result_tuple as rt
 
 LOG = logging.getLogger(__name__)
 
@@ -202,9 +204,8 @@ class Opt:
             LOG.debug("")
 
         self.print_results()
-        result_tup = (len(self.page_table.frame_table), self.page_table.total_memory_accesses,
-                      self.page_table.page_faults, self.page_table.writes_to_disk)
-        return result_tup
+        return rt.ResultTuple(len(self.page_table.frame_table), self.page_table.total_memory_accesses,
+                              self.page_table.page_faults, self.page_table.writes_to_disk, 'N/A')
 
     def opt(self, memory_access):
         """

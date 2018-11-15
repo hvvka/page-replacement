@@ -1,7 +1,10 @@
 """
 Clock page replacement algorithm implementation
 """
+
 import logging
+
+import result_tuple as rt
 
 LOG = logging.getLogger(__name__)
 
@@ -46,8 +49,8 @@ class Clock:
             self.print_trace(next_address, next_vpn)
 
         self.print_results()
-        return (len(self.page_table.frame_table), self.page_table.total_memory_accesses,
-                self.page_table.page_faults, self.page_table.writes_to_disk)
+        return rt.ResultTuple(len(self.page_table.frame_table), self.page_table.total_memory_accesses,
+                              self.page_table.page_faults, self.page_table.writes_to_disk, 'N/A')
 
     def add_page_or_update(self, mem_address):
         """

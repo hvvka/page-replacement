@@ -1,10 +1,12 @@
 """ 'Aging' Page Replacement Algorithm Implementation
 """
+
 import logging
 import time
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.CRITICAL)
+import result_tuple as rt
+
+LOG = logging.getLogger(__name__)
 
 
 ##########################
@@ -15,7 +17,7 @@ class Aging:
 
     def __init__(self, page_table, trace, refresh_rate):
         # set the variables for our algorithm
-        self.PAGE_TABLE = page_table
+        self.page_table = page_table
         self.trace = trace
         self.frame_queue = page_table.frame_table
         index = 0
@@ -113,7 +115,7 @@ class Aging:
         # if dirty, write to disk
         if page.dirty:
             self.dirty = True
-            self.PAGE_TABLE.writes_to_disk += 1
+            self.page_table.writes_to_disk += 1
             self.remove(ppn)
 
         # if clean, no disk write
@@ -129,7 +131,7 @@ class Aging:
 
     def run_algorithm(self):
         # keep track of our memory accesses
-        self.PAGE_TABLE.total_memory_accesses = 0
+        self.page_table.total_memory_accesses = 0
 
         # run the algorithm while we have items left in the trace
         while len(self.trace) > 0:
@@ -140,7 +142,7 @@ class Aging:
 
             # pull out next item of the trace
             next_address = self.trace[0]
-            next_vpn = self.PAGE_TABLE.get_vpn(next_address[0])
+            next_vpn = self.page_table.get_vpn(next_address[0])
             next_read_or_write = next_address[1]
 
             # run it in our algorithm
@@ -153,36 +155,38 @@ class Aging:
             # then remove it from the trace, so it isn't processed a second time
             self.trace.pop(0)
 
-            self.PAGE_TABLE.total_memory_accesses += 1
+            self.page_table.total_memory_accesses += 1
             # print trace to screen
             if self.hit:
-                logger.info("Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
-                            str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->HIT")
+                LOG.info("Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " +
+                         str(self.page_table.total_memory_accesses) + "\n\t->HIT")
             elif not self.evict:
                 logging.info(
-                    "Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
-                    str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - NO EVICTION")
+                    "Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " +
+                    str(self.page_table.total_memory_accesses) + "\n\t->PAGE FAULT - NO EVICTION")
                 # else, we have a page fault
-                self.PAGE_TABLE.page_faults += 1
+                self.page_table.page_faults += 1
             elif self.evict and not self.dirty:
                 logging.info(
-                    "Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
-                    str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - EVICT CLEAN")
+                    "Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " +
+                    str(self.page_table.total_memory_accesses) + "\n\t->PAGE FAULT - EVICT CLEAN")
                 # else, we have a page fault
-                self.PAGE_TABLE.page_faults += 1
+                self.page_table.page_faults += 1
             else:
                 logging.info(
-                    "Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " + \
-                    str(self.PAGE_TABLE.total_memory_accesses) + "\n\t->PAGE FAULT - EVICT DIRTY")
+                    "Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " +
+                    str(self.page_table.total_memory_accesses) + "\n\t->PAGE FAULT - EVICT DIRTY")
                 # else, we have a page fault
-                self.PAGE_TABLE.page_faults += 1
+                self.page_table.page_faults += 1
 
         self.print_results()
+        rt.ResultTuple(len(self.page_table.frame_table), self.page_table.total_memory_accesses,
+                       self.page_table.page_faults, self.page_table.writes_to_disk, self.refresh)
 
     def print_results(self):
         logging.info("Algorithm: Aging")
-        logging.info("Number of frames:   " + str(len(self.PAGE_TABLE.frame_table)))
+        logging.info("Number of frames:   " + str(len(self.page_table.frame_table)))
         logging.info("Refresh Rate:       " + str(self.refresh_time_in_ms))
-        logging.info("Total Memory Accesses: " + str(self.PAGE_TABLE.total_memory_accesses))
-        logging.info("Total Page Faults: " + str(self.PAGE_TABLE.page_faults))
-        logging.info("Total Writes to Disk: " + str(self.PAGE_TABLE.writes_to_disk))
+        logging.info("Total Memory Accesses: " + str(self.page_table.total_memory_accesses))
+        logging.info("Total Page Faults: " + str(self.page_table.page_faults))
+        logging.info("Total Writes to Disk: " + str(self.page_table.writes_to_disk))
