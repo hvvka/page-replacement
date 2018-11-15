@@ -24,7 +24,10 @@ class Clock:
         self.evict = False
         self.dirty = False
 
-    def run_algorithm(self):
+    def __str__(self) -> str:
+        return 'Clock'
+
+    def run_algorithm(self) -> rt.ResultTuple:
         """
         Performs clock page replacement algorithm
         """

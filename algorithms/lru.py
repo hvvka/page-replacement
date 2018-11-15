@@ -31,6 +31,9 @@ class LRU:
         self.evict = False
         self.dirty = False
 
+    def __str__(self) -> str:
+        return 'LRU'
+
     def initialize_ppns(self):
         """
         Assigns PPNs (Physical Page Numbers) to each frame from page_table.
@@ -128,7 +131,7 @@ class LRU:
         removal_page.dirty = False
         removal_page.vpn = None
 
-    def run_algorithm(self):
+    def run_algorithm(self) -> rt.ResultTuple:
         """
         Executes LRU algorithm
         :return: tuple with algorithm final result

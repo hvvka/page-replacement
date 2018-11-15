@@ -26,6 +26,9 @@ class Opt:
 
         self.preprocess_trace()
 
+    def __str__(self) -> str:
+        return 'Opt'
+
     def get_next_address(self):
         """
         Consume current value at trace[0] and remove it from the list.
@@ -161,7 +164,7 @@ class Opt:
             self.evict = True
             self.dirty = False
 
-    def run_algorithm(self):
+    def run_algorithm(self) -> rt.ResultTuple:
         """
         Run the opt algorithm on all memory accesses in the trace
         :return:
