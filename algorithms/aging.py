@@ -10,7 +10,6 @@ import result_tuple as rt
 LOG = logging.getLogger(__name__)
 
 
-# To do -- re run for everything and fix recommendation to 0.00001
 class Aging:
 
     def __init__(self, page_table, trace, refresh_rate):
@@ -60,11 +59,13 @@ class Aging:
             for elem in self.frame_queue:
                 elem.reference = False
 
-    def add_or_update_page(self, vpn, read_or_write):
+    def is_hit(self, vpn, read_or_write):
         """
-        Tries to add/update a page. If not possible, evicts a page.
+        Checks if there is a hit in page.
+        If yes, marks page according to read_or_write.
         :param vpn:
         :param read_or_write:
+        :return:
         """
         for elem in self.frame_queue:
             # check for it a hit
@@ -75,9 +76,14 @@ class Aging:
                     elem.dirty = True
                 else:
                     elem.reference = True
-                return
+                return True
+        return False
 
-        # look for an empty page, if found, use it
+    def was_empty_page_used(self, vpn, read_or_write):
+        """
+        Looks for and empty page and if found, uses it
+        :return:
+        """
         for elem in self.frame_queue:
             if not elem.in_use:
 
@@ -87,20 +93,33 @@ class Aging:
                     elem.dirty = True
                 else:
                     elem.reference = True
-                return
+                return True
+        return False
 
-        # ff there is not a hit or empty page wasn't found, gather info about the page values
-        lowest_value_page_number = 0
-        # higher than highest value in the 8-bit counter (255)
-        lowest_value_overall = 257
-        for elem in self.frame_queue:
-            if elem.aging_value < lowest_value_overall:
-                lowest_value_page_number = elem.ppn
-                lowest_value_overall = elem.aging_value
+    def add_or_update_page(self, vpn, read_or_write):
+        """
+        Tries to add/update a page. If not possible, evicts a page.
+        :param vpn:
+        :param read_or_write:
+        """
+        if self.is_hit(vpn, read_or_write):
+            return
+        elif self.was_empty_page_used(vpn, read_or_write):
+            return
+        else:
+            # otherwise page table is full and there is need to evict a page with lowest value
+            lowest_value_page_number = 0
+            # higher than highest value in the 8-bit counter (255)
+            lowest_value_overall = 257
 
-        # if page table is full, there is need to evict a page with lowest value is evicted
-        self.evict_lowest_value_page(lowest_value_page_number)
-        self.add_or_update_page(vpn, read_or_write)
+            for elem in self.frame_queue:
+                if elem.aging_value < lowest_value_overall:
+                    lowest_value_page_number = elem.ppn
+                    lowest_value_overall = elem.aging_value
+
+            self.evict_lowest_value_page(lowest_value_page_number)
+            if not self.was_empty_page_used(vpn, read_or_write):
+                raise Exception("There should have been an empty page used!")
 
     def evict_lowest_value_page(self, ppn):
         """
@@ -127,7 +146,6 @@ class Aging:
         removal_page.vpn = None
 
     def run_algorithm(self) -> rt.ResultTuple:
-        # keep track of our memory accesses
         self.page_table.total_memory_accesses = 0
 
         while self.trace:
