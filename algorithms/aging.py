@@ -3,7 +3,6 @@ Aging page replacement algorithm implementation
 """
 
 import logging
-import time
 
 import result_tuple as rt
 
@@ -27,9 +26,10 @@ class Aging:
         self.dirty = False
 
         # refresh variables for aging
-        self.refresh_time_in_ms = refresh_rate
+        self.COUNTER_LENGTH = 16
+        self.refresh_time_in_clock_ticks = refresh_rate
         self.refresh = False
-        self.time_of_last_refresh = time.clock()
+        self.time_of_last_refresh = 0
 
     def __str__(self) -> str:
         return 'Aging'
@@ -37,14 +37,14 @@ class Aging:
     def age_and_mark_if_referenced_during_last_tick(self):
         """
         Shifts counters (performs aging).
-        Assumption: counter is 8-bit.
+        Assumption: counter is COUNTER_LENGTH-bit.
         """
         for elem in self.frame_queue:
             elem.aging_value >>= 1
 
             if elem.reference:
                 # write 1 in most significant bit
-                elem.aging_value |= (1 << 7)
+                elem.aging_value |= (1 << self.COUNTER_LENGTH)
 
     def collect_data_on_references_during_this_tick(self):
         """
@@ -52,9 +52,10 @@ class Aging:
         If yes, performs counters shifting depending on reference bit, updates time to refresh value
         and resets reference bits.
         """
-        if time.clock() - self.time_of_last_refresh >= self.refresh_time_in_ms:
+        self.time_of_last_refresh += 1
+        if self.time_of_last_refresh >= self.refresh_time_in_clock_ticks:
             self.age_and_mark_if_referenced_during_last_tick()
-            self.time_of_last_refresh = time.clock()
+            self.time_of_last_refresh = 0
 
             for elem in self.frame_queue:
                 elem.reference = False
@@ -190,12 +191,13 @@ class Aging:
 
         self.print_results()
         return rt.ResultTuple(len(self.page_table.frame_table), self.page_table.total_memory_accesses,
-                              self.page_table.page_faults, self.page_table.writes_to_disk, self.refresh_time_in_ms)
+                              self.page_table.page_faults, self.page_table.writes_to_disk,
+                              self.refresh_time_in_clock_ticks)
 
     def print_results(self):
         LOG.info("Algorithm: Aging")
         LOG.info("Number of frames:      %s", len(self.page_table.frame_table))
-        LOG.info("Refresh Rate:          %s", self.refresh_time_in_ms)
+        LOG.info("Refresh Rate:          %s", self.refresh_time_in_clock_ticks)
         LOG.info("Total Memory Accesses: %s", self.page_table.total_memory_accesses)
         LOG.info("Total Page Faults:     %s", self.page_table.page_faults)
         LOG.info("Total Writes to Disk:  %s", self.page_table.writes_to_disk)
