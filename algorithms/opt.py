@@ -1,8 +1,10 @@
 """
 OPT (optimal) page replacement algorithm implementation
 """
+
 import logging
-import sys
+
+import result_tuple as rt
 
 LOG = logging.getLogger(__name__)
 
@@ -23,6 +25,9 @@ class Opt:
         self.dirty = False
 
         self.preprocess_trace()
+
+    def __str__(self) -> str:
+        return 'Opt'
 
     def get_next_address(self):
         """
@@ -159,7 +164,7 @@ class Opt:
             self.evict = True
             self.dirty = False
 
-    def run_algorithm(self):
+    def run_algorithm(self) -> rt.ResultTuple:
         """
         Run the opt algorithm on all memory accesses in the trace
         :return:
@@ -202,9 +207,8 @@ class Opt:
             LOG.debug("")
 
         self.print_results()
-        result_tup = (len(self.page_table.frame_table), self.page_table.total_memory_accesses,
-                      self.page_table.page_faults, self.page_table.writes_to_disk)
-        return result_tup
+        return rt.ResultTuple(len(self.page_table.frame_table), self.page_table.total_memory_accesses,
+                              self.page_table.page_faults, self.page_table.writes_to_disk, 'N/A')
 
     def opt(self, memory_access):
         """

@@ -4,6 +4,8 @@ Least Recently Used page replacement algorithm implementation
 
 import logging
 
+import result_tuple as rt
+
 LOG = logging.getLogger(__name__)
 
 
@@ -28,6 +30,9 @@ class LRU:
         self.hit = False
         self.evict = False
         self.dirty = False
+
+    def __str__(self) -> str:
+        return 'LRU'
 
     def initialize_ppns(self):
         """
@@ -126,7 +131,7 @@ class LRU:
         removal_page.dirty = False
         removal_page.vpn = None
 
-    def run_algorithm(self):
+    def run_algorithm(self) -> rt.ResultTuple:
         """
         Executes LRU algorithm
         :return: tuple with algorithm final result
@@ -157,8 +162,8 @@ class LRU:
             self.print_trace(next_address, next_vpn)
 
         self.print_results()
-        return (len(self.page_table.frame_table), self.page_table.total_memory_accesses,
-                self.page_table.page_faults, self.page_table.writes_to_disk)
+        return rt.ResultTuple(len(self.page_table.frame_table), self.page_table.total_memory_accesses,
+                              self.page_table.page_faults, self.page_table.writes_to_disk, 'N/A')
 
     def print_trace(self, next_address, next_vpn):
         """
