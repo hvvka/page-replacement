@@ -31,7 +31,7 @@ class PageTable:
         # dictionary enhancing OPT algorithm mapping VPN to PPN
         self.fast_index = dict()
 
-        # used in clock and aging algorithms
+        # used in clock algorithm
         self.frame_queue = cq.CircularQueue(self.num_frames)
 
     @staticmethod

@@ -1,4 +1,5 @@
-""" 'Aging' Page Replacement Algorithm Implementation
+"""
+Aging page replacement algorithm implementation
 """
 
 import logging
@@ -9,24 +10,19 @@ import result_tuple as rt
 LOG = logging.getLogger(__name__)
 
 
-##########################
-######## ALGORITHM #######
-##########################
 # To do -- re run for everything and fix recommendation to 0.00001
 class Aging:
 
     def __init__(self, page_table, trace, refresh_rate):
-        # set the variables for our algorithm
         self.page_table = page_table
         self.trace = trace
         self.frame_queue = page_table.frame_table
+
         index = 0
-        # set our PPNs ins the page table
         for elem in self.frame_queue:
             elem.ppn = index
             index += 1
 
-        # output variables
         self.hit = False
         self.evict = False
         self.dirty = False
@@ -40,92 +36,90 @@ class Aging:
         return 'Aging'
 
     def age_and_mark_if_referenced_during_last_tick(self):
-        # iterate through the frame queue
+        """
+        Shifts counters (performs aging).
+        Assumption: counter is 8-bit.
+        """
         for elem in self.frame_queue:
-
-            # shift right all bits by 1
             elem.aging_value >>= 1
 
-            # if the element was referenced,
-            # and write a 1 in MSB
             if elem.reference:
+                # write 1 in most significant bit
                 elem.aging_value |= (1 << 7)
 
     def collect_data_on_references_during_this_tick(self):
-        # check if it's time to refresh and age
+        """
+        Checks if it is time to refresh counters.
+        If yes, performs counters shifting depending on reference bit, updates time to refresh value
+        and resets reference bits.
+        """
         if time.clock() - self.time_of_last_refresh >= self.refresh_time_in_ms:
-            # add or update, then reset the reference bits
             self.age_and_mark_if_referenced_during_last_tick()
             self.time_of_last_refresh = time.clock()
 
-            # then reset all the reference bits
             for elem in self.frame_queue:
                 elem.reference = False
 
     def add_or_update_page(self, vpn, read_or_write):
-        # try and add/update, if success, we're done... otherwise need to evict
-        # first see if the element is already present,
-        # and gather info about the values as we do it
-        lowest_value_page_number = 0
-        lowest_value_overall = 257  # higher than the highest value in 8 bits, which is 255
+        """
+        Tries to add/update a page. If not possible, evicts a page.
+        :param vpn:
+        :param read_or_write:
+        """
         for elem in self.frame_queue:
-            # gather info on the page values, as we do it
+            # check for it a hit
+            if elem.vpn == vpn:
+                self.hit = True
+
+                if read_or_write == 'W':
+                    elem.dirty = True
+                else:
+                    elem.reference = True
+                return
+
+        # look for an empty page, if found, use it
+        for elem in self.frame_queue:
+            if not elem.in_use:
+
+                elem.in_use = True
+                elem.vpn = vpn
+                if read_or_write == 'W':
+                    elem.dirty = True
+                else:
+                    elem.reference = True
+                return
+
+        # ff there is not a hit or empty page wasn't found, gather info about the page values
+        lowest_value_page_number = 0
+        # higher than highest value in the 8-bit counter (255)
+        lowest_value_overall = 257
+        for elem in self.frame_queue:
             if elem.aging_value < lowest_value_overall:
                 lowest_value_page_number = elem.ppn
                 lowest_value_overall = elem.aging_value
 
-            # check for it a hit
-            if elem.vpn == vpn:
-                # mark hit as true
-                self.hit = True
-                # if we're doing a write, the element is dirty
-                if read_or_write == 'W':
-                    elem.dirty = True
-                # otherwise we're doing a read
-                else:
-                    elem.reference = True
-                # and exit, because we have a hit
-                return
-
-        # so look for an empty page, first, and if we find one, use it
-        for elem in self.frame_queue:
-            # check for a free element
-            if elem.in_use == False:
-                # set values accordingly
-                elem.in_use = True
-                elem.vpn = vpn
-                # if we're doing a write, need to set dirty bit
-                if read_or_write == 'W':
-                    elem.dirty = True
-                # if we're not writing, then we're reading, and so we need to set the reference bit
-                else:
-                    elem.reference = True
-                # and return
-                return
-
-        # if page table is full and the VPN is not in the page table currently,
-        # then we also need to evict, a page.
-        # so, we evict the page with lowest value
+        # if page table is full, there is need to evict a page with lowest value is evicted
         self.evict_lowest_value_page(lowest_value_page_number)
         self.add_or_update_page(vpn, read_or_write)
-        return
 
     def evict_lowest_value_page(self, ppn):
-        # get a handle to the page we want to remove
+        """
+        Evicts page with lowest page value.
+        :param ppn: index in frame_queue holding page to evict
+        """
         page = self.frame_queue[ppn]
         self.evict = True
 
-        # if dirty, write to disk
         if page.dirty:
             self.dirty = True
             self.page_table.writes_to_disk += 1
-            self.remove(ppn)
-
-        # if clean, no disk write
-        else:
-            self.remove(ppn)
+        self.remove(ppn)
 
     def remove(self, ppn):
+        """
+        Removes page from page table with given page table index.
+        :param ppn:
+        """
         removal_page = self.frame_queue[ppn]
         removal_page.in_use = False
         removal_page.referenced = False
@@ -136,50 +130,44 @@ class Aging:
         # keep track of our memory accesses
         self.page_table.total_memory_accesses = 0
 
-        # run the algorithm while we have items left in the trace
-        while len(self.trace) > 0:
-            # reset output variables
+        while self.trace:
             self.hit = False
             self.evict = False
             self.dirty = False
 
-            # pull out next item of the trace
             next_address = self.trace[0]
             next_vpn = self.page_table.get_vpn(next_address[0])
             next_read_or_write = next_address[1]
 
-            # run it in our algorithm
-            """ ALGORITHM HERE """
-
             self.collect_data_on_references_during_this_tick()
             self.add_or_update_page(next_vpn, next_read_or_write)
 
-            """ END ALGORITHM """
-            # then remove it from the trace, so it isn't processed a second time
             self.trace.pop(0)
 
             self.page_table.total_memory_accesses += 1
-            # print trace to screen
+
             if self.hit:
-                LOG.info("Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " +
-                         str(self.page_table.total_memory_accesses) + "\n\t->HIT")
+                LOG.debug("Memory address: %s VPN=%s:: number %s \n\t->HIT",
+                          next_address[0],
+                          next_vpn,
+                          self.page_table.total_memory_accesses)
             elif not self.evict:
-                logging.info(
-                    "Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " +
-                    str(self.page_table.total_memory_accesses) + "\n\t->PAGE FAULT - NO EVICTION")
-                # else, we have a page fault
+                LOG.debug("Memory address: %s VPN=%s:: number %s \n\t->PAGE FAULT - NO EVICTION",
+                          next_address[0],
+                          next_vpn,
+                          self.page_table.total_memory_accesses)
                 self.page_table.page_faults += 1
             elif self.evict and not self.dirty:
-                logging.info(
-                    "Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " +
-                    str(self.page_table.total_memory_accesses) + "\n\t->PAGE FAULT - EVICT CLEAN")
-                # else, we have a page fault
+                LOG.debug("Memory address: %s VPN=%s:: number %s \n\t->PAGE FAULT - EVICT CLEAN",
+                          next_address[0],
+                          next_vpn,
+                          self.page_table.total_memory_accesses)
                 self.page_table.page_faults += 1
             else:
-                logging.info(
-                    "Memory address: " + str(next_address[0]) + " VPN=" + str(next_vpn) + ":: number " +
-                    str(self.page_table.total_memory_accesses) + "\n\t->PAGE FAULT - EVICT DIRTY")
-                # else, we have a page fault
+                LOG.debug("Memory address: %s VPN=%s:: number %s \n\t->PAGE FAULT - EVICT DIRTY",
+                          next_address[0],
+                          next_vpn,
+                          self.page_table.total_memory_accesses)
                 self.page_table.page_faults += 1
 
         self.print_results()
@@ -187,9 +175,9 @@ class Aging:
                               self.page_table.page_faults, self.page_table.writes_to_disk, self.refresh_time_in_ms)
 
     def print_results(self):
-        logging.info("Algorithm: Aging")
-        logging.info("Number of frames:   " + str(len(self.page_table.frame_table)))
-        logging.info("Refresh Rate:       " + str(self.refresh_time_in_ms))
-        logging.info("Total Memory Accesses: " + str(self.page_table.total_memory_accesses))
-        logging.info("Total Page Faults: " + str(self.page_table.page_faults))
-        logging.info("Total Writes to Disk: " + str(self.page_table.writes_to_disk))
+        LOG.info("Algorithm: Aging")
+        LOG.info("Number of frames:      %s", len(self.page_table.frame_table))
+        LOG.info("Refresh Rate:          %s", self.refresh_time_in_ms)
+        LOG.info("Total Memory Accesses: %s", self.page_table.total_memory_accesses)
+        LOG.info("Total Page Faults:     %s", self.page_table.page_faults)
+        LOG.info("Total Writes to Disk:  %s", self.page_table.writes_to_disk)
