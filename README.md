@@ -4,13 +4,19 @@
   
 Simulation and Data Analysis for 4 different Page Replacement Algorithms  
 
+
 ## Algorithms Simulated
     * OPT --> the optimal page replacement algorithm, used as a baseline in our data analysis, because it requires perfect future knowledge and is therefore not possible to implement in a real system.
     * Clock --> Second-chance 'clock' algorithm
     * Aging --> Aging algorithm that approximates LRU
     * LRU --> Exact LRU (Least Recently Used) page replacement algorithm
 
+
 ## Usage notes
+
+
+### VMSIM
+
 This is a python program. Please run it from the command line like so:  
 
 * Opt – Simulate what the optimal page replacement algorithm would choose if it had perfect knowledge  
@@ -20,7 +26,17 @@ This is a python program. Please run it from the command line like so:
 * Aging – Implement the aging algorithm that approximates LRU with an 8-bit counter  
     - EXAMPLE RUN:  `python vmsim.py –n 32 –a aging –r 1 gcc.trace`  
 * LRU – Do exact LRU.  
-    - EXAMPLE RUN:  `python vmsim.py –n 64 –a lru swim.trace`  
+    - EXAMPLE RUN:  `python vmsim.py –n 64 –a lru swim.trace`
+    
+    
+### GENERATOR
+
+Generates trace file. Parametrized with file size. E.g.:
+
+```bash
+$ python generator.py --pages 500000
+```
+
 
 ## Data Analysis
 Analysis can be found in:  
