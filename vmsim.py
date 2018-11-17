@@ -1,7 +1,7 @@
 """
 VM Simulator for Page Replacement Algorithms
 
-Usage:  python vmsim.py -n <numframes> -a <opt|clock|aging|lru> [-r <refresh>] <tracefile>
+Usage:  python vmsim.py --numframes <numframes> --tracefile tracefile [--refresh <refresh>]
 """
 import argparse
 import copy
@@ -67,7 +67,7 @@ def main():
     LOG.info("Parsed args: %s", cmd_line_args)
 
     num_frames = int(cmd_line_args[0])
-    refresh = float(cmd_line_args[1])
+    refresh = int(cmd_line_args[1])
     trace_file = cmd_line_args[2]
 
     memory_addresses = iparser.parse_trace_file(trace_file)
@@ -95,7 +95,6 @@ def main():
 
     output_file = create_results_dir(trace_file, num_frames)
     serialize_results(results, output_file)
-
 
 if __name__ == "__main__":
     main()

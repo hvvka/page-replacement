@@ -201,7 +201,7 @@ class Opt:
                           next_vpn,
                           self.page_table.total_memory_accesses)
 
-            LOG.debug("Page table:")
+            LOG.debug("Frame table:")
             for page in self.page_table.frame_table:
                 LOG.debug("%s", page)
             LOG.debug("")
