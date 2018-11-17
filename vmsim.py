@@ -90,7 +90,7 @@ def main():
         t_1 = datetime.datetime.now()
         LOG.info(vars(result_tuple))
         total_time = (t_1 - t_0).total_seconds() * 1000
-        results.append(result_tuple.get_result(alg.__str__(), trace_file, total_time))
+        results.append(result_tuple.get_result(alg.__str__(), os.path.basename(trace_file), total_time))
         LOG.info("TOTAL %s TIME: %s ms", alg.__str__(), str(total_time))
 
     output_file = create_results_dir(trace_file, num_frames)
