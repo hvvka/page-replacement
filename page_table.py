@@ -7,6 +7,7 @@
 # So we're looking at the first 20 bits to see if we've got a match.
 
 import circular_queue as cq
+from algorithms.aging import Aging
 
 
 class PageTable:
@@ -65,10 +66,10 @@ class Frame:
         self.reference = False
         # aging value used by AGING algorithm
         self.aging_value = 0
-        # last referenced used by LRU algorithm
+        # last reference used by LRU algorithm
         self.last_reference = 0
 
     def __repr__(self):
         return "vpn:\t{}\tppn:\t{}\tdirty:\t{}\tin_use:\t{}\tinstr_until_next_ref:\t{}\treference:\t{}\taging_value:\t{}\tlast_reference\t{}\t".format(
             self.vpn, self.ppn, self.dirty, self.in_use, self.instructions_until_next_reference, self.reference,
-            self.aging_value, self.last_reference)
+            format(self.aging_value, '#0' + str(Aging.COUNTER_LENGTH + 2) + 'b'), self.last_reference)
