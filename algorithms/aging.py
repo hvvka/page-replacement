@@ -36,7 +36,7 @@ class Aging:
     def __str__(self) -> str:
         return 'Aging'
 
-    def age_counter(self):
+    def shift_age_counter(self):
         """
         Shifts counters (performs aging).
         Assumption: counter is COUNTER_LENGTH-bit.
@@ -59,7 +59,7 @@ class Aging:
                 elem.reference = False
 
         if self.time_of_last_refresh >= self.refresh_time_in_processed_instructions:
-            self.age_counter()
+            self.shift_age_counter()
             self.time_of_last_refresh = 0
 
     def is_hit(self, vpn, read_or_write):
@@ -83,7 +83,7 @@ class Aging:
 
     def was_empty_page_used(self, vpn, read_or_write):
         """
-        Looks for and empty page and if found, uses it
+        Looks for an empty page and if found, uses it
         :return:
         """
         for elem in self.frame_queue:
@@ -104,22 +104,22 @@ class Aging:
         """
         if self.is_hit(vpn, read_or_write):
             return
-        elif self.was_empty_page_used(vpn, read_or_write):
+        if self.was_empty_page_used(vpn, read_or_write):
             return
-        else:
-            # otherwise page table is full and there is need to evict a page with lowest value
-            lowest_value_page_number = 0
-            # higher than highest value in the COUNTER_LENGTH-bit counter
-            lowest_value_overall = 2 ** Aging.COUNTER_LENGTH
 
-            for elem in self.frame_queue:
-                if elem.aging_value < lowest_value_overall:
-                    lowest_value_page_number = elem.ppn
-                    lowest_value_overall = elem.aging_value
+        # otherwise page table is full and there is need to evict a page with lowest value
+        lowest_value_page_number = 0
+        # higher than highest value in the COUNTER_LENGTH-bit counter
+        lowest_value_overall = 2 ** Aging.COUNTER_LENGTH
 
-            self.evict_lowest_value_page(lowest_value_page_number)
-            if not self.was_empty_page_used(vpn, read_or_write):
-                raise Exception("There should have been an empty page used!")
+        for elem in self.frame_queue:
+            if elem.aging_value < lowest_value_overall:
+                lowest_value_page_number = elem.ppn
+                lowest_value_overall = elem.aging_value
+
+        self.evict_lowest_value_page(lowest_value_page_number)
+        if not self.was_empty_page_used(vpn, read_or_write):
+            raise Exception("There should have been an empty page used!")
 
     def evict_lowest_value_page(self, ppn):
         """
