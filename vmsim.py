@@ -8,6 +8,7 @@ import copy
 import csv
 import datetime
 import logging
+import os
 import sys
 
 import algorithms.aging as aging
@@ -20,13 +21,35 @@ import page_table as pt
 logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger(__name__)
 
+RESULT_DIR = 'results/'
 
-def serialize_results(results, output_file):
+
+def serialize_results(results, output_file: str):
+    """
+    Writes algorithm results to CSV file.
+    :param results: an array of result tuples
+    :param output_file: path to output file
+    """
     with open(output_file, "w") as output:
         writer = csv.writer(output, lineterminator='\n')
         writer.writerow(
             ('alg', 'trace_file', 'frames', 'total_mem_access', 'page_faults', 'writes', 'refresh', 'total_time'))
         writer.writerows(results)
+
+
+def create_results_dir(trace_file, num_frames: int) -> str:
+    """
+    Creates (if doesn't exist) and returns path to write results.
+    :param trace_file: path to generated trace file
+    :param num_frames: number of frames that were used to perform algorithm
+    :return: output directory path to write results
+    """
+    output_path: str = RESULT_DIR + os.path.splitext(os.path.basename(trace_file))[0] + '_trace/'
+    if not os.path.exists(RESULT_DIR):
+        os.makedirs(RESULT_DIR)
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
+    return output_path + str(num_frames) + '_frames.csv'
 
 
 def main():
@@ -70,7 +93,7 @@ def main():
         results.append(result_tuple.get_result(alg.__str__(), trace_file, total_time))
         LOG.info("TOTAL %s TIME: %s ms", alg.__str__(), str(total_time))
 
-    output_file = 'results/' + str(num_frames) + '_frames.csv'
+    output_file = create_results_dir(trace_file, num_frames)
     serialize_results(results, output_file)
 
 

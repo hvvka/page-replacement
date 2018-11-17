@@ -3,28 +3,39 @@ Trace file generator.
 """
 
 import argparse
+import os
 import random
+
+OUTPUT_DIRECTORY = 'data/'
 
 
 class Generator:
     """
     Generates random output file representing memory for given number of pages.
     """
-
     def __init__(self, pages: int):
         self.pages = pages
 
     def generate(self):
         """
-        Generates output file `<number of pages>.trace` in `data` directory (must exist!).
+        Generates output file `<number of pages>.trace` in `data` directory.
         """
-        filename: str = 'data/' + str(self.pages) + '.trace'
+        self.create_data_dir()
+        filename: str = OUTPUT_DIRECTORY + str(self.pages) + '.trace'
         with open(filename, 'w+') as file:
             for _ in range(self.pages):
                 file.write(RandomPage().__repr__())
 
+    @staticmethod
+    def create_data_dir():
+        """
+        Creates directory `data` in project root.
+        """
+        if not os.path.exists(OUTPUT_DIRECTORY):
+            os.makedirs(OUTPUT_DIRECTORY)
 
-PPN_UPPER_BOUND = 2
+
+VPN_UPPER_BOUND = 150  # max: 20**2-1 = 399
 READ_PROBABILITY = 75  # in %
 
 
@@ -34,12 +45,12 @@ class RandomPage:
     """
 
     def __init__(self):
-        self.ppn = ''.join([str(random.randint(0, PPN_UPPER_BOUND)) for _ in range(5)])
-        self.vpn = '{:03x}'.format(random.getrandbits(12))
+        self.vpn = '{:05x}'.format(random.randint(0, VPN_UPPER_BOUND))
+        self.ppn = '{:03x}'.format(random.getrandbits(12))
         self.r_w = 'W' if random.randint(0, 100) > READ_PROBABILITY else 'R'
 
     def __repr__(self):
-        return self.ppn + self.vpn + ' ' + self.r_w + '\n'
+        return self.vpn + self.ppn + ' ' + self.r_w + '\n'
 
 
 def main():
