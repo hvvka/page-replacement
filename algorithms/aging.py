@@ -75,8 +75,7 @@ class Aging:
 
                 if read_or_write == 'W':
                     elem.dirty = True
-                else:
-                    elem.reference = True
+                elem.reference = True
                 return True
         return False
 
@@ -92,8 +91,7 @@ class Aging:
                 elem.vpn = vpn
                 if read_or_write == 'W':
                     elem.dirty = True
-                else:
-                    elem.reference = True
+                elem.reference = True
                 return True
         return False
 
@@ -142,7 +140,7 @@ class Aging:
         """
         removal_page = self.frame_queue[ppn]
         removal_page.in_use = False
-        removal_page.referenced = False
+        removal_page.reference = False
         removal_page.dirty = False
         removal_page.vpn = None
 
