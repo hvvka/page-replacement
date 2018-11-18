@@ -4,6 +4,8 @@ Clock page replacement algorithm implementation
 
 import logging
 
+import circular_queue as cq
+import page_table as pt
 import result_tuple as rt
 
 LOG = logging.getLogger(__name__)
@@ -15,14 +17,14 @@ class Clock:
     for given table of pages and trace dataset
     """
 
-    def __init__(self, page_table, trace):
-        self.page_table = page_table
-        self.trace = trace
-        self.frame_queue = page_table.frame_queue
+    def __init__(self, page_table: pt.PageTable, trace: list):
+        self.page_table: pt.PageTable = page_table
+        self.trace: list = trace
+        self.frame_queue: cq.CircularQueue = page_table.frame_queue
 
-        self.hit = False
-        self.evict = False
-        self.dirty = False
+        self.hit: bool = False
+        self.evict: bool = False
+        self.dirty: bool = False
 
     def __str__(self) -> str:
         return 'Clock'
@@ -134,7 +136,7 @@ class Clock:
         Prints algorithm final result
         """
         LOG.info("Algorithm: Clock")
-        LOG.info("Number of frames:   %s", str(len(self.page_table.frame_table)))
+        LOG.info("Number of frames:      %s", str(len(self.page_table.frame_table)))
         LOG.info("Total Memory Accesses: %s", str(self.page_table.total_memory_accesses))
-        LOG.info("Total Page Faults: %s", str(self.page_table.page_faults))
-        LOG.info("Total Writes to Disk: %s", str(self.page_table.writes_to_disk))
+        LOG.info("Total Page Faults:     %s", str(self.page_table.page_faults))
+        LOG.info("Total Writes to Disk:  %s", str(self.page_table.writes_to_disk))
