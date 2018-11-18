@@ -40,9 +40,11 @@ class CircularQueue:
                 elem.in_use = True
                 elem.vpn = vpn
                 # if we're doing a write, need to set dirty bit
-                elem.dirty = read_or_write == 'W'
-                # if we're not writing, then we're reading, and so we need to set the reference bit
-                elem.reference = read_or_write != 'W'
+                if read_or_write == 'W':
+                    elem.dirty = True
+                    # if we're not writing, then we're reading, and so we need to set the reference bit
+                else:
+                    elem.reference = True
 
                 return added
 

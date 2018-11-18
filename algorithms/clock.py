@@ -79,7 +79,7 @@ class Clock:
 
             # Add the frame in the newly freed space
             self.frame_queue.add_or_update_successful(vpn, read_or_write)
-            self.hit = True
+            self.hit = False
 
         # Otherwise, we've got a hit
         else:
