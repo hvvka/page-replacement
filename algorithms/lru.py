@@ -1,7 +1,7 @@
 """
 Least Recently Used page replacement algorithm implementation
 """
-
+import copy
 import logging
 
 import page_table as pt
@@ -20,7 +20,7 @@ class LRU:
           Call add again.
     """
 
-    def __init__(self, page_table: pt.PageTable, trace: list):
+    def __init__(self, page_table: pt.PageTable, trace: list, keep_page_table_states: bool = False):
         self.page_table: pt.PageTable = page_table
         self.trace: list = trace
         self.frame_list: list = page_table.frame_table
@@ -30,6 +30,9 @@ class LRU:
         self.hit: bool = False
         self.evict: bool = False
         self.dirty: bool = False
+
+        self.keep_page_table_states: bool = keep_page_table_states
+        self.kept_page_table_states: list = []
 
     def initialize_ppns(self):
         """
@@ -72,6 +75,9 @@ class LRU:
             self.page_table.total_memory_accesses += 1
 
             self.print_trace(next_address, next_vpn)
+
+            if self.keep_page_table_states:
+                self.kept_page_table_states.append(copy.deepcopy(self.page_table))
 
         self.print_results()
         return rt.ResultTuple(len(self.page_table.frame_table), self.page_table.total_memory_accesses,

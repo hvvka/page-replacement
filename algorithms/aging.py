@@ -1,7 +1,7 @@
 """
 Aging page replacement algorithm implementation
 """
-
+import copy
 import logging
 
 import result_tuple as rt
@@ -15,7 +15,7 @@ class Aging:
     """
     COUNTER_LENGTH = 16
 
-    def __init__(self, page_table, trace, refresh_rate):
+    def __init__(self, page_table, trace, refresh_rate, keep_page_table_states: bool = False):
         self.page_table = page_table
         self.trace = trace
         self.frame_queue = page_table.frame_table
@@ -32,6 +32,9 @@ class Aging:
         # refresh variables for aging
         self.refresh_time_in_processed_instructions = refresh_rate
         self.time_of_last_refresh = 0
+
+        self.keep_page_table_states: bool = keep_page_table_states
+        self.kept_page_table_states: list = []
 
     def __str__(self) -> str:
         return 'Aging'
@@ -199,6 +202,9 @@ class Aging:
             for page in self.frame_queue:
                 LOG.debug("%s", page)
             LOG.debug("")
+
+            if self.keep_page_table_states:
+                self.kept_page_table_states.append(copy.deepcopy(self.page_table))
 
         self.print_results()
         return rt.ResultTuple(len(self.page_table.frame_table), self.page_table.total_memory_accesses,

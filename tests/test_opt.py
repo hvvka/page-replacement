@@ -14,7 +14,7 @@ class TestOpt(unittest.TestCase):
         self.memory_addresses = parser.parse_trace_file(self.params.trace_path)
 
     def test_algorithm(self):
-        opt_algorithm = opt.Opt(self.page_table, self.memory_addresses)
+        opt_algorithm = opt.Opt(self.page_table, self.memory_addresses, keep_page_table_states=True)
         opt_algorithm.run_algorithm()
 
         self.assertEqual(10, opt_algorithm.page_table.total_memory_accesses)

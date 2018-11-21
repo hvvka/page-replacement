@@ -14,7 +14,8 @@ class TestAging(unittest.TestCase):
         self.memory_addresses = parser.parse_trace_file(self.params.trace_path)
 
     def test_algorithm(self):
-        lru_algorithm = aging.Aging(self.page_table, self.memory_addresses, self.params.refresh)
+        lru_algorithm = aging.Aging(self.page_table, self.memory_addresses, self.params.refresh,
+                                    keep_page_table_states=True)
         lru_algorithm.run_algorithm()
 
 
