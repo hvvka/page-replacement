@@ -2,6 +2,7 @@
 OPT (optimal) page replacement algorithm implementation
 """
 
+import copy
 import logging
 
 import result_tuple as rt
@@ -14,7 +15,7 @@ class Opt:
     An implementation of the optimal page replacement algorithm
     """
 
-    def __init__(self, page_table, trace):
+    def __init__(self, page_table, trace, keep_states: bool = False):
         self.page_table = page_table
         self.trace = trace
         # KEY = VPN, VALUE = [NUM_LOADS_UNTIL_USED]
@@ -24,10 +25,16 @@ class Opt:
         self.evict = False
         self.dirty = False
 
+        self.keep_states: bool = keep_states
+        self.table_states: list = []
+
         self.preprocess_trace()
 
     def __str__(self) -> str:
         return 'Opt'
+
+    def get_table_states(self):
+        return self.table_states
 
     def get_next_address(self):
         """
@@ -205,6 +212,9 @@ class Opt:
             for page in self.page_table.frame_table:
                 LOG.debug("%s", page)
             LOG.debug("")
+
+            if self.keep_states:
+                self.table_states.append(copy.deepcopy(self.page_table))
 
         self.print_results()
         return rt.ResultTuple(len(self.page_table.frame_table), self.page_table.total_memory_accesses,
