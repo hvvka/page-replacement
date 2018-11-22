@@ -14,7 +14,7 @@ class TestLru(unittest.TestCase):
         self.memory_addresses = parser.parse_trace_file(self.params.trace_path)
 
     def test_algorithm(self):
-        lru_algorithm = lru.LRU(self.page_table, self.memory_addresses)
+        lru_algorithm = lru.LRU(self.page_table, self.memory_addresses, keep_states=True)
         lru_algorithm.run_algorithm()
 
 
