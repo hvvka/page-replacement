@@ -15,7 +15,7 @@ class Opt:
     An implementation of the optimal page replacement algorithm
     """
 
-    def __init__(self, page_table, trace, keep_page_table_states: bool = False):
+    def __init__(self, page_table, trace, keep_states: bool = False):
         self.page_table = page_table
         self.trace = trace
         # KEY = VPN, VALUE = [NUM_LOADS_UNTIL_USED]
@@ -25,16 +25,16 @@ class Opt:
         self.evict = False
         self.dirty = False
 
-        self.keep_page_table_states: bool = keep_page_table_states
-        self.kept_page_table_states: list = []
+        self.keep_states: bool = keep_states
+        self.table_states: list = []
 
         self.preprocess_trace()
 
     def __str__(self) -> str:
         return 'Opt'
 
-    def get_kept_page_table_states(self):
-        return self.kept_page_table_states
+    def get_table_states(self):
+        return self.table_states
 
     def get_next_address(self):
         """
@@ -213,8 +213,8 @@ class Opt:
                 LOG.debug("%s", page)
             LOG.debug("")
 
-            if self.keep_page_table_states:
-                self.kept_page_table_states.append(copy.deepcopy(self.page_table))
+            if self.keep_states:
+                self.table_states.append(copy.deepcopy(self.page_table))
 
         self.print_results()
         return rt.ResultTuple(len(self.page_table.frame_table), self.page_table.total_memory_accesses,

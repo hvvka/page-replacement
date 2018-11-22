@@ -15,7 +15,7 @@ class TestAging(unittest.TestCase):
 
     def test_algorithm(self):
         lru_algorithm = aging.Aging(self.page_table, self.memory_addresses, self.params.refresh,
-                                    keep_page_table_states=True)
+                                    keep_states=True)
         lru_algorithm.run_algorithm()
 
 

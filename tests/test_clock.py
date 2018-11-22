@@ -14,7 +14,7 @@ class TestClock(unittest.TestCase):
         self.memory_addresses = parser.parse_trace_file(self.params.trace_path)
 
     def test_algorithm(self):
-        clock_algorithm = clock.Clock(self.page_table, self.memory_addresses, keep_page_table_states=True)
+        clock_algorithm = clock.Clock(self.page_table, self.memory_addresses, keep_states=True)
         clock_algorithm.run_algorithm()
 
 
