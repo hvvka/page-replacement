@@ -28,6 +28,7 @@ class Opt:
         self.keep_states: bool = keep_states
         self.table_states: list = []
 
+        self.initialize_ppns()
         self.preprocess_trace()
 
     def __str__(self) -> str:
@@ -35,6 +36,15 @@ class Opt:
 
     def get_table_states(self):
         return self.table_states
+
+    def initialize_ppns(self):
+        """
+        Assigns PPNs (Physical Page Numbers) to each frame from page_table.frame_table.
+        """
+        counter: int = 0
+        for elem in self.page_table.frame_table:
+            elem.ppn = counter
+            counter += 1
 
     def get_next_address(self):
         """
