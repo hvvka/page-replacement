@@ -100,9 +100,6 @@ class LRU:
         if self.is_hit(vpn, read_or_write):
             return True
 
-        # try and add to an empty space, even though we have a page fault
-        # if not self.add_after_page_fault(vpn, read_or_write):
-        # and if that returns false, we need to EVICT and try again
         self.evict = True
         self.evict_page()
 

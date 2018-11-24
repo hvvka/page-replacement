@@ -42,7 +42,7 @@ class CircularQueue:
                 # if we're doing a write, need to set dirty bit
                 if read_or_write == 'W':
                     elem.dirty = True
-                    # if we're not writing, then we're reading, and so we need to set the reference bit
+                # if we're not writing, then we're reading, and so we need to set the reference bit
                 else:
                     elem.reference = True
 
