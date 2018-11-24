@@ -65,17 +65,13 @@ class LRU:
             self.dirty = False
 
             # pull out next item of the trace
-            next_address = self.trace[0]
+            next_address = self.get_next_address()
             next_vpn = self.page_table.get_vpn(next_address[0])
             next_read_or_write = next_address[1]
 
             # run it in our algorithm
             if not self.add_or_update_successful(next_vpn, next_read_or_write):
                 self.add_after_page_fault(next_vpn, next_read_or_write)
-
-            # then remove it from the trace, so it isn't processed a second time
-            self.trace.pop(0)
-            self.page_table.total_memory_accesses += 1
 
             self.print_trace(next_address, next_vpn)
 
@@ -86,6 +82,14 @@ class LRU:
         return rt.ResultTuple(len(self.page_table.frame_table), self.page_table.total_memory_accesses,
                               self.page_table.page_faults, self.page_table.writes_to_disk, 'N/A')
 
+    def get_next_address(self):
+        """
+        Consume current value at trace[0] and remove it from the list.
+        :return: next address
+        """
+        self.page_table.total_memory_accesses += 1
+        return self.trace.pop(0)
+
     def add_or_update_successful(self, vpn, read_or_write):
         """
         Takes care of next page in trace
@@ -93,32 +97,37 @@ class LRU:
         :param read_or_write: read or write action
         :return: boolean: hit == true, evict == false
         """
-        # first check if we have a hit
-        for elem in self.frame_list:
-            if elem.vpn == vpn:
-                # mark that we had a hit
-                self.hit = True
+        if self.is_hit(vpn, read_or_write):
+            return True
 
-                # add the page
-                # set values accordingly
+        # try and add to an empty space, even though we have a page fault
+        # if not self.add_after_page_fault(vpn, read_or_write):
+        # and if that returns false, we need to EVICT and try again
+        self.evict = True
+        self.evict_page()
+
+        return False
+
+    def is_hit(self, vpn, read_or_write):
+        """
+        Checks if there is a hit in page.
+        If yes, marks page according to read_or_write.
+        :param vpn: virtual page number
+        :param read_or_write: access type
+        :return: was page in frame table
+        """
+        for elem in self.frame_list:
+            # check for it a hit
+            if elem.vpn == vpn:
+                self.hit = True
                 elem.in_use = True
                 elem.vpn = vpn
-                # if we're doing a write, need to set dirty bit
+
                 if read_or_write == 'W':
                     elem.dirty = True
-                # if we have a READ, mark the last reference variable, so we know that this was the last time our
-                # selected VPN was accessed
-                else:
-                    elem.last_reference = self.page_table.total_memory_accesses
+                elem.last_reference = self.page_table.total_memory_accesses
                 return True
-
         self.hit = False
-        # try and add to an empty space, even though we have a page fault
-        if not self.add_after_page_fault(vpn, read_or_write):
-            # and if that returns false, we need to EVICT and try again
-            self.evict = True
-            self.evict_page()
-
         return False
 
     def add_after_page_fault(self, vpn: int, read_or_write: str):
@@ -135,9 +144,7 @@ class LRU:
                 # if we're doing a write, need to set dirty bit
                 if read_or_write == 'W':
                     elem.dirty = True
-                else:
-                    # if we have a read, mark our reference
-                    elem.last_reference = self.page_table.total_memory_accesses
+                elem.last_reference = self.page_table.total_memory_accesses
                 return True
 
         # if we make it this far, then all items are in use, so return false
@@ -203,6 +210,9 @@ class LRU:
                       str(self.page_table.total_memory_accesses))
             self.page_table.page_faults += 1
             self.page_table.writes_to_disk += 1
+
+        for page in self.page_table.frame_table:
+            LOG.debug("%s", page)
 
     def print_results(self):
         """

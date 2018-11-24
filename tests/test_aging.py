@@ -7,9 +7,11 @@ import tests.test_config as params
 
 
 class TestAging(unittest.TestCase):
+    PATH = './resources/aging.json'
 
     def setUp(self):
         self.params = params.PublicParams()
+        self.expected_table_states = params.TableStates(self.PATH)
         self.page_table = pt.PageTable(self.params.frames)
         self.memory_addresses = parser.parse_trace_file(self.params.trace_path)
 
@@ -23,6 +25,8 @@ class TestAging(unittest.TestCase):
         self.assertEqual(3, aging_algorithm.page_table.writes_to_disk)
 
         table_states = aging_algorithm.get_table_states()
+
+        ## TODO ##
 
         # ppn should not change
         for pt in table_states:
