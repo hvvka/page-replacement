@@ -7,9 +7,11 @@ import tests.test_config as params
 
 
 class TestOpt(unittest.TestCase):
+    PATH = './resources/opt.json'
 
     def setUp(self):
         self.params = params.PublicParams()
+        self.expected_table_states = params.TableStates(self.PATH)
         self.page_table = pt.PageTable(self.params.frames)
         self.memory_addresses = parser.parse_trace_file(self.params.trace_path)
 
@@ -22,6 +24,8 @@ class TestOpt(unittest.TestCase):
         self.assertEqual(3, opt_algorithm.page_table.writes_to_disk)
 
         table_states = opt_algorithm.get_table_states()
+
+        ## TODO ##
 
         # only frame_table is needed for tests
 
