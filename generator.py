@@ -35,8 +35,8 @@ class Generator:
             os.makedirs(OUTPUT_DIRECTORY)
 
 
-VPN_UPPER_BOUND = 150  # max: 20**2-1 = 399
-READ_PROBABILITY = 75  # in %
+VPN_UPPER_BOUND = 80  # max: 20**2-1 = 399
+READ_PROBABILITY = 85  # in %
 
 
 class RandomPage:

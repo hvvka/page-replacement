@@ -51,12 +51,14 @@ class Clock:
             # Pull out next item of the trace
             next_address = self.trace[0]
             next_vpn = self.page_table.get_vpn(next_address[0])
+
             # Run it in our algorithm
             self.add_page_or_update(next_address)
+
             # Remove it from the trace, so it isn't processed a second time
             self.trace.pop(0)
-
             self.page_table.total_memory_accesses += 1
+
             self.print_trace(next_address, next_vpn)
 
             if self.keep_states:
@@ -75,10 +77,13 @@ class Clock:
         vpn = self.page_table.get_vpn(mem_address[0])
         read_or_write = mem_address[1]
 
-        # If we don't successfully add or update...
-        if not self.frame_queue.add_or_update_successful(vpn, read_or_write):
-            # If we don't find something, then we page fault, and we need to evict a page
+        if not self.is_hit(vpn, read_or_write):
             self.page_table.page_faults += 1
+            self.hit = False
+        else:
+            self.hit = True
+
+        if not self.frame_queue.add_or_update_successful(vpn, read_or_write):
             self.evict = True
 
             victim_frame = self.frame_queue.find_victim()
@@ -88,11 +93,24 @@ class Clock:
 
             # Add the frame in the newly freed space
             self.frame_queue.add_or_update_successful(vpn, read_or_write)
-            self.hit = False
 
-        # Otherwise, we've got a hit
-        else:
-            self.hit = True
+    def is_hit(self, vpn, read_or_write):
+        """
+        Checks if there is a hit in page.
+        If yes, marks page according to read_or_write.
+        :param vpn: virtual page number
+        :param read_or_write: memory access type
+        :return: if page is present in frame queue
+        """
+        for elem in self.frame_queue.list:
+            if elem.vpn == vpn:
+                self.hit = True
+
+                if read_or_write == 'W':
+                    elem.dirty = True
+                elem.reference = True
+                return True
+        return False
 
     def run_swap_demon(self, victim_frame):
         """
@@ -139,6 +157,9 @@ class Clock:
                       str(next_address[0]),
                       str(next_vpn),
                       str(self.page_table.total_memory_accesses))
+
+        for list in self.page_table.frame_queue.list:
+            LOG.debug("%s", list)
 
     def print_results(self):
         """

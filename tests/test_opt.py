@@ -7,9 +7,11 @@ import tests.test_config as params
 
 
 class TestOpt(unittest.TestCase):
+    PATH = './resources/opt.json'
 
     def setUp(self):
         self.params = params.PublicParams()
+        self.expected_table_states = params.TableStates(self.PATH)
         self.page_table = pt.PageTable(self.params.frames)
         self.memory_addresses = parser.parse_trace_file(self.params.trace_path)
 
