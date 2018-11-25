@@ -1,0 +1,204 @@
+{
+  "states": {
+    "0": [
+      {
+        "vpn": 74565,
+        "dirty": "False",
+        "in_use": "True",
+        "instructions_until_next_reference": "3"
+      },
+      {
+        "vpn": 0,
+        "dirty": "False",
+        "in_use": "False",
+        "instructions_until_next_reference": "None"
+      },
+      {
+        "vpn": 0,
+        "dirty": "False",
+        "in_use": "False",
+        "instructions_until_next_reference": "None"
+      }
+    ],
+    "1": [
+      {
+        "vpn": 74565,
+        "dirty": "False",
+        "in_use": "True",
+        "instructions_until_next_reference": "2"
+      },
+      {
+        "vpn": 4660,
+        "dirty": "False",
+        "in_use": "True",
+        "instructions_until_next_reference": "7"
+      },
+      {
+        "vpn": 0,
+        "dirty": "False",
+        "in_use": "False",
+        "instructions_until_next_reference": "None"
+      }
+    ],
+    "2": [
+      {
+        "vpn": 74565,
+        "dirty": "False",
+        "in_use": "True",
+        "instructions_until_next_reference": "1"
+      },
+      {
+        "vpn": 4660,
+        "dirty": "False",
+        "in_use": "True",
+        "instructions_until_next_reference": "6"
+      },
+      {
+        "vpn": 590115,
+        "dirty": "True",
+        "in_use": "True",
+        "instructions_until_next_reference": "8"
+      }
+    ],
+    "3": [
+      {
+        "vpn": 74565,
+        "dirty": "False",
+        "in_use": "True",
+        "instructions_until_next_reference": "0"
+      },
+      {
+        "vpn": 4660,
+        "dirty": "False",
+        "in_use": "True",
+        "instructions_until_next_reference": "5"
+      },
+      {
+        "vpn": 692242,
+        "dirty": "False",
+        "in_use": "True",
+        "instructions_until_next_reference": "2"
+      }
+    ],
+    "4": [
+      {
+        "vpn": 74565,
+        "dirty": "True",
+        "in_use": "True",
+        "instructions_until_next_reference": "-1"
+      },
+      {
+        "vpn": 4660,
+        "dirty": "False",
+        "in_use": "True",
+        "instructions_until_next_reference": "4"
+      },
+      {
+        "vpn": 692242,
+        "dirty": "False",
+        "in_use": "True",
+        "instructions_until_next_reference": "1"
+      }
+    ],
+    "5": [
+      {
+        "vpn": 764161,
+        "dirty": "False",
+        "in_use": "True",
+        "instructions_until_next_reference": "5"
+      },
+      {
+        "vpn": 4660,
+        "dirty": "False",
+        "in_use": "True",
+        "instructions_until_next_reference": "3"
+      },
+      {
+        "vpn": 692242,
+        "dirty": "False",
+        "in_use": "True",
+        "instructions_until_next_reference": "0"
+      }
+    ],
+    "6": [
+      {
+        "vpn": 764161,
+        "dirty": "False",
+        "in_use": "True",
+        "instructions_until_next_reference": "4"
+      },
+      {
+        "vpn": 4660,
+        "dirty": "False",
+        "in_use": "True",
+        "instructions_until_next_reference": "2"
+      },
+      {
+        "vpn": 692242,
+        "dirty": "False",
+        "in_use": "True",
+        "instructions_until_next_reference": "-1"
+      }
+    ],
+    "7": [
+      {
+        "vpn": 834192,
+        "dirty": "True",
+        "in_use": "True",
+        "instructions_until_next_reference": "3"
+      },
+      {
+        "vpn": 4660,
+        "dirty": "False",
+        "in_use": "True",
+        "instructions_until_next_reference": "1"
+      },
+      {
+        "vpn": 692242,
+        "dirty": "False",
+        "in_use": "True",
+        "instructions_until_next_reference": "3"
+      }
+    ],
+    "8": [
+      {
+        "vpn": 904105,
+        "dirty": "False",
+        "in_use": "True",
+        "instructions_until_next_reference": "2"
+      },
+      {
+        "vpn": 4660,
+        "dirty": "False",
+        "in_use": "True",
+        "instructions_until_next_reference": "0"
+      },
+      {
+        "vpn": 692242,
+        "dirty": "False",
+        "in_use": "True",
+        "instructions_until_next_reference": "2"
+      }
+    ],
+    "9": [
+      {
+        "vpn": 904105,
+        "dirty": "False",
+        "in_use": "True",
+        "instructions_until_next_reference": "1"
+      },
+      {
+        "vpn": 4660,
+        "dirty": "True",
+        "in_use": "True",
+        "instructions_until_next_reference": "-1"
+      },
+      {
+        "vpn": 692242,
+        "dirty": "False",
+        "in_use": "True",
+        "instructions_until_next_reference": "1"
+      }
+    ]
+  }
+}
