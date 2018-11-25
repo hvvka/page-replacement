@@ -31,6 +31,12 @@ def cast_bool(string: str):
     return string == 'True'
 
 
+def cast_decimal_or_none(string: str):
+    if string == "None":
+        return None
+    return int(string)
+
+
 def parse_params(file_path):
     with open(file_path) as json_data:
         data = json.load(json_data)
