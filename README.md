@@ -2,34 +2,53 @@
 
 [Original project – VMsim](https://github.com/adpoe/Page-Replacement-Simulator) by [Tony Poerio](mailto:tony@tonypoer.io).
   
-Simulation and Data Analysis for 4 different Page Replacement Algorithms  
+Simulation and data analysis for 4 different page replacement algorithms.  
 
 
-## Algorithms Simulated
-    * OPT --> the optimal page replacement algorithm, used as a baseline in our data analysis, because it requires perfect future knowledge and is therefore not possible to implement in a real system.
-    * Clock --> Second-chance 'clock' algorithm
-    * Aging --> Aging algorithm that approximates LRU
-    * LRU --> Exact LRU (Least Recently Used) page replacement algorithm
+## Algorithms
+
+* **Clock**.
+   More efficient version of the second chance algorithm (FINUFO, First In Not Used First Out), 
+   because the pages do not have to be constantly moved to the end of the list, 
+   while they fulfill the same general function as the second chance.
+   
+* **LRU** – Least Recently Used.
+   This algorithm assumes that pages that were most often used in the past will also be 
+   the most commonly used in the future. While LRU provides in theory almost optimal performance, 
+   it is expensive to implement.
+   
+* **OPT** – optimal. 
+   Used as a baseline in the analysis, because it requires perfect future knowledge and 
+   is therefore not possible to implement in a real system.
+   Also known as the Bélády algorithm.
+   
+* **Aging** – approximate LRU.
+   The aging algorithm derives from the NFU (Not Frequently Used) algorithm. 
+   Each page in the page table has its own counter.
 
 
 ## Usage notes
 
+Requires Python 3.
 
-### VMSIM
+### [vmsim](vmsim.py)
 
-This is a python program. Please run it from the command line like so:  
+Main program. 3 arguments can be passed:
 
-* Opt – Simulate what the optimal page replacement algorithm would choose if it had perfect knowledge  
-    - EXAMPLE RUN:  `python vmsim.py –n 8 –a opt gcc.trace`  
-* Clock – Use the better implementation of the second-chance algorithm  
-    - EXAMPLE RUN:  `python vmsim.py –n 16 –a clock swim.trace`  
-* Aging – Implement the aging algorithm that approximates LRU with an 8-bit counter  
-    - EXAMPLE RUN:  `python vmsim.py –n 32 –a aging –r 1 gcc.trace`  
-* LRU – Do exact LRU.  
-    - EXAMPLE RUN:  `python vmsim.py –n 64 –a lru swim.trace`
-    
-    
-### GENERATOR
+- _--numframes_ – number of frames in RAM. **Required**
+
+- _--refresh_ – refresh time [ms] for aging algorithm. _Optional_
+
+- _--tracefile_ – path to the source file (should contain 32b addresses with memory access type). **Required**
+ 
+E.g. run:
+
+```bash
+$ python vmsim.py --numframes 8 --refresh 6 --tracefile data/100000.trace
+```
+
+ 
+### [generator](generator.py)
 
 Generates trace file. Parametrized with file size. E.g.:
 
@@ -37,11 +56,31 @@ Generates trace file. Parametrized with file size. E.g.:
 $ python generator.py --pages 500000
 ```
 
+Output directory is `data/`.
 
-## Data Analysis
-Analysis can be found in:  
-`adp59-Project_3_Analysis.pdf`  
 
-Source code for the graphs can be found in:  
-`SimulationOutputs.xlsx`
+### [run](run.sh)
 
+
+Bash script used for measurement.
+
+The script is parameterized with two data arrays (traces & frames). 
+It runs two scripts in Python – [generator](generator.py) and [vmsim](vmsim.py).
+
+Firstly, 3 files with input data (trace files) are generated.
+Then for each of the files all algorithms are executed for each frame length.
+
+9 CSV files in `results/` are produced as a result.
+
+Simply run:
+
+```bash
+$ ./run.sh
+```
+
+
+## Analysis
+
+Tables and charts can be found [here](excel/output_analysis.xlsx).
+
+There's also a wiki page.
